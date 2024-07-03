@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SiteRole {
+  ADMIN
+  USER
+}
+
+enum LocationRole {
+  OWNER
+  MANAGER
+  TEAMMEMBER
+  VIEWER
+}
+
+enum RelationRoleGottesdienst {
+  TECHNIK_BILD
+  TECHNIK_TON
+  TECHNIK_STREAM
+  PASTOR
+  MODERATOR
+  MUSIK
+  KINDERHUTTE
+  KINDERTREFF
+  TEENETALK
+  BISTRO
+  PUTZTEAM
+  TEAM
+}
+
+model User {
+  id                String              @id @default(cuid())
+  email             String              @unique
+  name              String?
+  password          String
+  role              SiteRole            @default(USER)
+  location          Location[]
+  locationRole      LocationRole        @default(VIEWER)
+  Gottesdienst_User Gottesdienst_User[]
+  Abwesenheitens    Abwesenheitens[]
+  deleted           Boolean             @default(false)
+}
+
+model Location {
+  id           String         @id @default(cuid())
+  name         String
+  address      String
+  Gottesdienst Gottesdienst[]
+  users        User[]
+}
+
+model Gottesdienst {
+  id                String              @id @default(cuid())
+  locationId        String
+  location          Location            @relation(fields: [locationId], references: [id])
+  anlass            String?
+  date              DateTime
+  abendmahl         Boolean             @default(false)
+  comment           String?
+  pastor            String?
+  thema             String?
+  textstelle        String?
+  kontakt           String?
+  Gottesdienst_User Gottesdienst_User[]
+  findetStatt       Boolean             @default(true)
+}
+
+model Abwesenheitens {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  dateFrom   DateTime
+  dateTo     DateTime
+  reason     String?
+  isApproved Boolean   @default(false)
+  approvedBy String?
+  approvedAt DateTime?
+}
+
+model Gottesdienst_User {
+  id             String                   @id @default(cuid())
+  gottesdienstId String
+  gottesdienst   Gottesdienst             @relation(fields: [gottesdienstId], references: [id])
+  userId         String
+  user           User                     @relation(fields: [userId], references: [id])
+  role           RelationRoleGottesdienst @default(TEAM)
+}
