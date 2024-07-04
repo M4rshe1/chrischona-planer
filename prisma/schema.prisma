@@ -12,7 +12,7 @@ enum SiteRole {
   USER
 }
 
-enum LocationRole {
+enum RelationRoleLocation {
   OWNER
   MANAGER
   TEAMMEMBER
@@ -35,24 +35,24 @@ enum RelationRoleGottesdienst {
 }
 
 model User {
-  id                String              @id @default(cuid())
+  id                String              @id @unique @default(cuid())
   email             String              @unique
   name              String?
   password          String
   role              SiteRole            @default(USER)
-  location          Location[]
-  locationRole      LocationRole        @default(VIEWER)
+  locations         user_location[]
   Gottesdienst_User Gottesdienst_User[]
   Abwesenheitens    Abwesenheitens[]
   deleted           Boolean             @default(false)
 }
 
 model Location {
-  id           String         @id @default(cuid())
-  name         String
+  id           String          @id @default(cuid())
+  name         String          @unique
   address      String
   Gottesdienst Gottesdienst[]
-  users        User[]
+  Users        user_location[]
+  access_codes access_code[]
 }
 
 model Gottesdienst {
@@ -90,4 +90,23 @@ model Gottesdienst_User {
   userId         String
   user           User                     @relation(fields: [userId], references: [id])
   role           RelationRoleGottesdienst @default(TEAM)
+}
+
+model user_location {
+  id         String               @id @default(cuid())
+  userId     String
+  locationId String
+  user       User                 @relation(fields: [userId], references: [id])
+  location   Location             @relation(fields: [locationId], references: [id])
+  relation   RelationRoleLocation @default(VIEWER)
+}
+
+model access_code {
+  id         String    @id @default(cuid())
+  code       String
+  locationId String
+  location   Location  @relation(fields: [locationId], references: [id])
+  validuntil DateTime?
+  maxuses    Int?
+  used       Int       @default(0)
 }

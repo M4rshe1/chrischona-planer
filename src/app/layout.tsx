@@ -10,8 +10,8 @@ import Footer from "@/components/footer";
 const inter = Inter({subsets: ["latin"]});
 
 export const metadata: Metadata = {
-  title: "MAL Stats",
-  description: "A simple MAL stats viewer",
+  title: "Chrischona Planer",
+  description: "Chrischona Planer",
 };
 
 export default async function RootLayout({children,}: Readonly<{ children: React.ReactNode }>) {
