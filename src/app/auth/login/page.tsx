@@ -53,7 +53,7 @@ const LoginPage = (req: any) => {
                     </svg>
                     <input type="password" className="grow" placeholder='password' name='password'/>
                 </label>
-                <button className={'btn grow'} type="submit">Login</button>
+                <button className={'btn grow btn-neutral'} type="submit">Login</button>
                 {
                     req.searchParams?.error ? <div
                         className={"flex items-center justify-center border-red-800 border-2 rounded-md p-2 mt-2 text-red-800 bg-opacity-30 bg-red-800 font-bold"}

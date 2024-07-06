@@ -1,6 +1,6 @@
 import NextAuth, {NextAuthOptions} from 'next-auth';
 import CredentialsProvider from "next-auth/providers/credentials";
-import {PrismaClient} from '@prisma/client'
+import {PrismaClient, SiteRole} from '@prisma/client'
 import {compare} from "bcrypt";
 
 const prisma = new PrismaClient()
@@ -10,10 +10,16 @@ export type UserSession = {
         id: string;
         email: string;
         name: string;
-        role: string;
+        role: SiteRole
         iat: number;
         exp: number;
         jti: string;
+        locations: {
+            name: string,
+            address: string,
+            id: string,
+            relation: string
+        }[]
     }
 }
 
@@ -23,14 +29,14 @@ export const authOptions: NextAuthOptions = {
     },
     pages: {
         signIn: '/auth/login',
-        signOut: '/auth/logout',
     },
+    secret: process.env.NEXTAUTH_SECRET,
     providers: [
         CredentialsProvider({
             name: 'Sign in',
             credentials: {
-                email: { label: "Email", type: "email" },
-                password: {  label: "Password", type: "password" }
+                email: {label: "Email", type: "email"},
+                password: {label: "Password", type: "password"}
             },
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) {
@@ -40,9 +46,17 @@ export const authOptions: NextAuthOptions = {
                 const user = await prisma.user.findUnique({
                     where: {
                         email: credentials.email
+                    },
+                    include: {
+                        locations: {
+                            select: {
+                                location: true,
+                                relation: true
+                            }
+                        }
                     }
                 })
-                prisma.$disconnect()
+                await prisma.$disconnect()
 
                 if (!user) {
                     return null
@@ -53,27 +67,36 @@ export const authOptions: NextAuthOptions = {
                     return null
                 }
 
-
                 return {
                     id: user.id as string,
                     email: user.email,
                     name: user.name,
                     role: user.role,
+                    locations: user.locations.map((location) => {
+                            return {
+                                name: location.location.name,
+                                address: location.location.address,
+                                id: location.location.id,
+                                relation: location.relation
+                            }
+                        }
+                    )
                 }
             }
         })
     ],
     callbacks: {
-        session: async ({ session, token }) => {
+        session: async ({session, token}) => {
             return {
                 expires: session.expires,
                 user: token
             }
         },
-        jwt: async ({ token, user }) => {
+        jwt: async ({token, user}) => {
             const u = user as unknown as any
             if (u) {
-                return { ...token,
+                return {
+                    ...token,
                     ...u
                 }
             }
@@ -82,7 +105,5 @@ export const authOptions: NextAuthOptions = {
     }
 }
 
-prisma.$disconnect()
-
 const handler = NextAuth(authOptions)
-export { handler as GET, handler as POST}
+export {handler as GET, handler as POST}

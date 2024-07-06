@@ -17,7 +17,7 @@ const Header = async () => {
             <div className="navbar">
                 <div className="flex-1">
                     <Link href={'/'} className="btn btn-ghost text-xl">
-                        <Image src={"/chrischona.png"} alt={"Chrischona Logo"} width={40} height={40}/>
+                        <Image src={"/logo.png"} alt={"Chrischona Logo"} width={40} height={40}/>
                         Chrischona Planer
                     </Link>
                 </div>
@@ -87,12 +87,21 @@ const Header = async () => {
                             </div>
                             <ul tabIndex={0}
                                 className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-200 rounded-md w-52 grid grid-cols-1 gap-1">
+                                <p
+                                className={"text-center font-bold text-lg"}
+                                >
+                                    {session.user.name}
+                                </p>
                                 <li><Link className="justify-between"
-                                          href={"/stats"}>Profile</Link></li>
+                                          href={"/account"}>Account</Link></li>
+                                <li><Link className="justify-between"
+                                          href={"/account/requests"}>Meine Anfragen</Link></li>
+                                <li><Link className="justify-between"
+                                          href={"/account/absences"}>Meine Absenzen</Link></li>
                                 {/*<li><Link className="justify-between"*/}
                                 {/*          href={'/stats/' + session.user.username + '/all-stats'}>All Stats</Link>*/}
                                 {/*</li>*/}
-                                <li><Link href={"/account/settings"}>Settings</Link></li>
+                                <li><Link href={"/account/settings"}>Einstellungen</Link></li>
                                 <li>{<LogoutButton className={''}/>}</li>
                             </ul>
                         </div> : null

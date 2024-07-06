@@ -44,15 +44,18 @@ model User {
   Gottesdienst_User Gottesdienst_User[]
   Abwesenheitens    Abwesenheitens[]
   deleted           Boolean             @default(false)
+  access_requests   access_request[]
+  teams             team[]
 }
 
 model Location {
-  id           String          @id @default(cuid())
-  name         String          @unique
-  address      String
-  Gottesdienst Gottesdienst[]
-  Users        user_location[]
-  access_codes access_code[]
+  id              String           @id @default(cuid())
+  name            String           @unique
+  address         String
+  Gottesdienst    Gottesdienst[]
+  Users           user_location[]
+  access_codes    access_code[]
+  access_requests access_request[]
 }
 
 model Gottesdienst {
@@ -103,10 +106,29 @@ model user_location {
 
 model access_code {
   id         String    @id @default(cuid())
-  code       String
   locationId String
   location   Location  @relation(fields: [locationId], references: [id])
   validuntil DateTime?
   maxuses    Int?
   used       Int       @default(0)
+}
+
+model access_request {
+  id         String               @id @default(cuid())
+  userId     String
+  locationId String
+  user       User                 @relation(fields: [userId], references: [id])
+  location   Location             @relation(fields: [locationId], references: [id])
+  message    String?
+  approved   Boolean              @default(false)
+  approvedBy String?
+  approvedAt DateTime?
+  relation   RelationRoleLocation @default(VIEWER)
+}
+
+model team {
+  id     String                   @id @default(cuid())
+  userId String
+  user   User                     @relation(fields: [userId], references: [id])
+  name   RelationRoleGottesdienst @default(TEAM)
 }

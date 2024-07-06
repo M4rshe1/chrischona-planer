@@ -30,7 +30,7 @@ const RegisterPage = async (req: any) => {
             }
         })
         if (user) {
-            prisma.$disconnect()
+            await prisma.$disconnect()
             return redirect('/auth/register?error=User with that email or username already exists')
         }
         const newUser = await prisma.user.create({
@@ -39,7 +39,7 @@ const RegisterPage = async (req: any) => {
                 password: passwordHash,
             }
         })
-        prisma.$disconnect()
+        await prisma.$disconnect()
         return redirect('/auth/login?success=Account created, please login')
     }
 
@@ -86,7 +86,7 @@ const RegisterPage = async (req: any) => {
                     <input type="password" className="grow" placeholder='repeat password' name='repeated_password'
                            required/>
                 </label>
-                <button className={'btn grow'} type="submit">Register</button>
+                <button className={'btn grow btn-neutral'} type="submit">Register</button>
                 {
                     req.searchParams?.error ? <div
                         className={"flex items-center justify-center border-red-800 border-2 rounded-md p-2 mt-2 text-red-800 bg-opacity-30 bg-red-800 font-bold"}

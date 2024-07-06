@@ -8,7 +8,7 @@ export const LoginButton = ({className = ''}: { className: string }) => {
     return (
         <button
             className={'btn ml-2 btn-primary ' + className}
-            onClick={() => signIn()}>Login</button>
+            onClick={() => signIn()}>Anmelden</button>
     )
 }
 
@@ -20,18 +20,18 @@ export const LogoutButton = ({className = ''}: { className: string }) => {
                 signOut().then(() => {
                     redirect('/')
                 })
-            }}>Logout</button>
+            }}>Abmelden
+        </button>
     )
 }
 
 export const RegisterButton = ({className = ''}: { className: string }) => {
     return (
         <Link href={'/auth/register'} className={'btn bg-base-100 ' + className}>
-            Register
+            Registrieren
         </Link>
     )
 }
-
 
 
 
