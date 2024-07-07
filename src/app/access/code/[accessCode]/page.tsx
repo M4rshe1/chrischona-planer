@@ -14,7 +14,8 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
     }
 
 
-    let db_accessCode = null;
+    let db_accessCode = null
+    let user_in_location = null
     try {
         db_accessCode = await prisma.access_code.findUnique({
             where: {
@@ -24,10 +25,21 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
                 location: true
             }
         })
+
+        user_in_location = await prisma.user_location.findFirst({
+            where: {
+                userId: session.user.id,
+                locationId: db_accessCode?.location.id
+            }
+        })
     } catch (e) {
         console.error(e)
     } finally {
         await prisma.$disconnect()
+    }
+
+    if (user_in_location) {
+        return redirect("/location/" + db_accessCode?.location.id)
     }
 
     if (!db_accessCode) {
@@ -84,6 +96,32 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
                 </div>
             )
         }
+    }
+
+    if (db_accessCode.approvalNeeded) {
+        await prisma.access_request.create({
+            data: {
+                locationId: db_accessCode.location.id,
+                userId: session.user.id,
+                message: "Zugriffsanfrage mit dem Code " + params.accessCode
+            }
+        })
+
+
+
+        return (
+            <div
+                className={"w-full h-full flex items-center justify-start grow"}
+            >
+                <main
+                    className={"flex items-center justify-center w-full h-full p-4"}
+                >
+                    <h1
+                        className={'text-2xl text-center'}
+                    >Eine Zugriffsanfrage wurde an den Standort {db_accessCode.location.name} gesendet</h1>
+                </main>
+            </div>
+        )
     }
 
     try {

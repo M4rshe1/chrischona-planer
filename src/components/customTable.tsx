@@ -3,8 +3,22 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
+import {dateOptions} from "@/lib/types";
 
-const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave, editButton, deleteButton, actions, selectMenu, handleDelete}: {
+const CustomTable = ({
+                         columns,
+                         data,
+                         dropdown,
+                         tableName,
+                         addButton,
+                         handleSave,
+                         editButton,
+                         deleteButton,
+                         actions,
+                         selectMenu,
+                         handleDelete,
+                         exportButton
+                     }: {
     columns: any[],
     data: any,
     dropdown: string[],
@@ -15,7 +29,8 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
     editButton?: boolean,
     deleteButton?: boolean,
     actions?: any,
-    selectMenu: boolean
+    selectMenu: boolean,
+    exportButton?: boolean
 }) => {
     console.log(data)
     const formRef = useRef<HTMLDivElement>(null);
@@ -69,6 +84,41 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
                 }
             })
         }, true);
+    }
+
+    function handleExport() {
+        const csvHeader = columns.map((column) => {
+            return column.label;
+        }).join(",");
+        const csvData = data[selected].map((row: any) => {
+            return columns.map((column) => {
+                switch (column.type) {
+                    case "select":
+                        return row[column.name].map((value: any) => {
+                            return value.value;
+                        }).join(";");
+                    case "datetime":
+                        // @ts-ignore
+                        return new Date(row[column.name]).toLocaleDateString('de-CH', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit'
+                        });
+                    case "boolean":
+                        return row[column.name] ? "Ja" : "Nein";
+                    default:
+                        return row[column.name];
+                }
+            }).join(",");
+        }).join("\n");
+        const csv = csvHeader + "\n" + csvData;
+        const blob = new Blob([csv], {type: "text/csv"});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${tableName}_${selected}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     const setModalData = (data: any, clear: boolean = false) => {
@@ -153,17 +203,31 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
             <div
                 className={"flex flex-row justify-between items-center w-full"}
             >
-                {
-                    addButton ?
-                        <div
-                            role={"button"}
-                            className={"btn btn-primary tooltip tooltip-right flex items-center justify-center aspect-square"}
-                            onClick={handleAdd}
-                            data-tip={"Neuer Eintrag"}
-                        ><FontAwesomeIcon icon={fas.faPlus}/>
+                <div
+                className={"flex flex-row gap-2"}
+                >
 
-                        </div> : <div></div>
-                }
+                    {
+                        addButton ?
+                            <div
+                                role={"button"}
+                                className={"btn btn-primary tooltip tooltip-right flex items-center justify-center aspect-square"}
+                                onClick={handleAdd}
+                                data-tip={"Neuer Eintrag"}
+                            ><FontAwesomeIcon icon={fas.faPlus}/>
+
+                            </div> : <div></div>
+                    }
+                    {
+                        exportButton ?
+                            <div
+                                role={"button"}
+                                className={"btn btn-neutral tooltip tooltip-right flex items-center justify-center aspect-square"}
+                                onClick={handleExport}
+                                data-tip={"Exportieren"}
+                            ><FontAwesomeIcon icon={fas.faFileArrowDown}/></div> : null
+                    }
+                </div>
                 <div>
                     <div
                         className={"dropdown dropdown-end mr-2"}
@@ -265,7 +329,7 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
                                     key={index}
                                 >
                                     {
-                                        (editButton || deleteButton || actions?.length)  ?
+                                        (editButton || deleteButton || actions?.length) ?
                                             <td
                                                 className={"text-nowrap"}
                                             >
@@ -403,38 +467,38 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
                                                             className={"input input-bordered"}
                                                             name={column.name}
                                                         /> :
-                                                    column.type === "boolean" ?
-                                                        <input
-                                                            type="checkbox"
-                                                            className={"checkbox checkbox-primary"}
-                                                            name={column.name}
-                                                        /> :
-                                                        column.type === "hidden" ?
+                                                        column.type === "boolean" ?
                                                             <input
-                                                                type="hidden"
-                                                                className={"hidden"}
-                                                                value={column.value}
+                                                                type="checkbox"
+                                                                className={"checkbox checkbox-primary"}
                                                                 name={column.name}
                                                             /> :
-                                                            column.type === "select" ?
-                                                                <select
-                                                                    className={"select select-bordered"}
+                                                            column.type === "hidden" ?
+                                                                <input
+                                                                    type="hidden"
+                                                                    className={"hidden"}
+                                                                    value={column.value}
                                                                     name={column.name}
-                                                                    multiple={column.multiple}
-                                                                >
-                                                                    {
-                                                                        column.options.map((option: any, index: number) => {
-                                                                            return (
-                                                                                <option
-                                                                                    key={index}
-                                                                                    value={option[column.keys.id]}
-                                                                                >
-                                                                                    {option[column.keys.value]}
-                                                                                </option>
-                                                                            )
-                                                                        })
-                                                                    }
-                                                                </select> : null
+                                                                /> :
+                                                                column.type === "select" ?
+                                                                    <select
+                                                                        className={"select select-bordered"}
+                                                                        name={column.name}
+                                                                        multiple={column.multiple}
+                                                                    >
+                                                                        {
+                                                                            column.options.map((option: any, index: number) => {
+                                                                                return (
+                                                                                    <option
+                                                                                        key={index}
+                                                                                        value={option[column.keys.id]}
+                                                                                    >
+                                                                                        {option[column.keys.value]}
+                                                                                    </option>
+                                                                                )
+                                                                            })
+                                                                        }
+                                                                    </select> : null
                                         }
                                     </div>
                                 )

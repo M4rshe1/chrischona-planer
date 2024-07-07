@@ -116,19 +116,19 @@ const Home = async () => {
                                     Events?.map((event, index) => {
                                         return (
                                             <Link
-                                                href={'/location/' + event.gottesdienst.locationId + '/planer/' + event.gottesdienst.id}
+                                                href={'/location/' + event.gottesdienst.locationId + '/planer/'}
                                                 key={index}
                                                 className="flex justify-between mt-4 bg-base-200 rounded-box p-4 border-neutral border-2 hover:shadow-lg h-full">
                                                 <div>
-                                                    <h2 className="text-xl font-bold">{event.gottesdienst.anlass}
+                                                    <h2 className={"text-xl font-bold" + (event.gottesdienst.findetStatt ? "" : " line-through")}
+                                                    >{event.gottesdienst.anlass}
                                                         {event.gottesdienst.abendmahl ? (<span className={"tooltip"}
                                                                                                data-tip={"Gottesdienst mit Abendmahl"}>🥖</span>) : ""}
                                                     </h2>
                                                     {/* @ts-ignore */}
                                                     <p>{event.gottesdienst.dateFrom.toLocaleDateString('de-CH', dateOptions)}</p>
-                                                    <p
-                                                        className={"text-sm text-neutral-500 font-semibold"}
-                                                    >{event.role}</p>
+                                                    <p className={"text-sm text-neutral-500 font-semibold"}>{event.role}</p>
+                                                    <p>{event.gottesdienst.kommentar}</p>
                                                 </div>
                                             </Link>
                                         )

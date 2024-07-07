@@ -2,9 +2,8 @@ import LocationLayout from "@/components/locationLayout";
 import {authOptions, UserSession} from "@/app/api/auth/[...nextauth]/route";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, RelationRoleLocation, Status} from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
 import {revalidatePath} from "next/cache";
-import {fas} from "@fortawesome/free-solid-svg-icons";
 import CustomTable from "@/components/customTable";
 
 
@@ -94,21 +93,22 @@ const page = async ({params}: { params: { locationId: string } }) => {
             type: "boolean",
             toggle: true,
             disabled: false
-        },
+        }
     ]
 
     async function handleSave(formData: FormData) {
         "use server"
         const prisma = new PrismaClient()
+        const validuntil = new Date(formData.get("validuntil") as string)
         if (!formData.get("id")) {
             try {
                 await prisma.access_code.create({
                     data: {
                         locationId: locationId,
-                        validuntil: formData.get("validuntil") as string,
+                        validuntil: validuntil.toISOString(),
                         maxuses: parseInt(formData.get("maxusers") as string),
                         used: 0,
-                        approvalNeeded: formData.get("approvallNeeded") === "true",
+                        approvalNeeded: formData.get("approvalNeeded") === "on",
                     }
                 })
             } catch (e) {
@@ -123,9 +123,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         id: formData.get("id") as string
                     },
                     data: {
-                        validuntil: formData.get("validuntil") as string,
+                        validuntil: validuntil.toISOString(),
                         maxuses: parseInt(formData.get("maxusers") as string),
-                        approvalNeeded: formData.get("approvallNeeded") === "true",
+                        approvalNeeded: formData.get("approvalNeeded") === "on",
                     }
                 })
             } catch (e) {

@@ -41,6 +41,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         user: true
                     }
                 }
+            },
+            orderBy: {
+                dateFrom: "asc"
             }
         })
 
@@ -84,12 +87,27 @@ const page = async ({params}: { params: { locationId: string } }) => {
     gottestdienste = gottestdienste?.map(gottesdienst => {
         return {
             ...gottesdienst,
-            technikBild: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_BILD").map(user => {return {value: user.user.name, id: user.user.id}}),
-            technikTon: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_TON").map(user => {return {value: user.user.name, id: user.user.id}}),
-            prediger: gottesdienst.Gottesdienst_User.filter(user => user.role === "PASTOR").map(user => {return {value: user.user.name, id: user.user.id}}),
-            moderator: gottesdienst.Gottesdienst_User.filter(user => user.role === "MODERATOR").map(user => {return {value: user.user.name, id: user.user.id}}),
-            kindertreff: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERTREFF").map(user => {return {value: user.user.name, id: user.user.id}}),
-            kinderhute: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERHUTTE").map(user => {return {value: user.user.name, id: user.user.id}})
+            technikBild: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_BILD").map(user => {
+                return {value: user.user.name, id: user.user.id}
+            }),
+            technikTon: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_TON").map(user => {
+                return {value: user.user.name, id: user.user.id}
+            }),
+            prediger: gottesdienst.Gottesdienst_User.filter(user => user.role === "PASTOR").map(user => {
+                return {value: user.user.name, id: user.user.id}
+            }),
+            moderator: gottesdienst.Gottesdienst_User.filter(user => user.role === "MODERATOR").map(user => {
+                return {value: user.user.name, id: user.user.id}
+            }),
+            kindertreff: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERTREFF").map(user => {
+                return {value: user.user.name, id: user.user.id}
+            }),
+            kinderhute: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERHUTTE").map(user => {
+                return {value: user.user.name, id: user.user.id}
+            }),
+            musik: gottesdienst.Gottesdienst_User.filter(user => user.role === "MUSIK").map(user => {
+                return {value: user.user.name, id: user.user.id}
+            })
         }
     })
 
@@ -183,6 +201,32 @@ const page = async ({params}: { params: { locationId: string } }) => {
             disabled: false
         },
         {
+            name: "prediger",
+            label: "Prediger",
+            type: "select",
+            options: users?.filter(user => user.teams.some(team => team.name === "PASTOR")),
+            multiple: false,
+            keys: {
+                value: "name",
+                id: "id"
+            },
+            toggle: true,
+            disabled: false
+        },
+        {
+            name: "moderator",
+            label: "Moderator",
+            type: "select",
+            options: users?.filter(user => user.teams.some(team => team.name === "MODERATOR")),
+            multiple: false,
+            keys: {
+                value: "name",
+                id: "id"
+            },
+            toggle: true,
+            disabled: false
+        },
+        {
             name: "technikBild",
             label: "Technik Bild",
             type: "select",
@@ -209,24 +253,11 @@ const page = async ({params}: { params: { locationId: string } }) => {
             disabled: false
         },
         {
-            name: "prediger",
-            label: "Prediger",
+            name: "musik",
+            label: "Musik",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "PASTOR")),
-            multiple: false,
-            keys: {
-                value: "name",
-                id: "id"
-            },
-            toggle: true,
-            disabled: false
-        },
-        {
-            name: "moderator",
-            label: "Moderator",
-            type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "MODERATOR")),
-            multiple: false,
+            options: users?.filter(user => user.teams.some(team => team.name === "MUSIK")),
+            multiple: true,
             keys: {
                 value: "name",
                 id: "id"
@@ -277,7 +308,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
     async function handleSave(formData: FormData) {
         "use server";
         const prisma = new PrismaClient()
-        console.log(formData)
         if (!formData.get("id")) {
             const dateUntill = new Date(formData.get("dateFrom") as string)
             dateUntill.setHours(dateUntill.getHours() + 3)
@@ -290,8 +320,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                     thema: formData.get("theme") as string,
                     textstelle: formData.get("textstelle") as string,
                     externerPastor: formData.get("externerPastor") as string,
-                    findetStatt: formData.get("findetStatt") === "true",
-                    abendmahl: formData.get("abendmahl") === "true",
+                    findetStatt: formData.get("findetStatt") === "on",
+                    abendmahl: formData.get("abendmahl") === "on",
                     kontakt: formData.get("kontakt") as string,
                     locationId: locationId,
                     Gottesdienst_User: {
@@ -321,6 +351,11 @@ const page = async ({params}: { params: { locationId: string } }) => {
                             ...(formData.getAll("kinderhute") as string[]).map(user => ({
                                 userId: user,
                                 role: "KINDERHUTTE"
+                            })),
+                            // @ts-ignore
+                            ...(formData.getAll("musik") as string[]).map(user => ({
+                                userId: user,
+                                role: "MUSIK"
                             }))
                         ]
                     }
@@ -342,8 +377,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                     thema: formData.get("theme") as string,
                     textstelle: formData.get("textstelle") as string,
                     externerPastor: formData.get("externerPastor") as string,
-                    findetStatt: formData.get("findetStatt") === "true",
-                    abendmahl: formData.get("abendmahl") === "true",
+                    findetStatt: formData.get("findetStatt") === "on",
+                    abendmahl: formData.get("abendmahl") === "on",
                     kontakt: formData.get("kontakt") as string,
                 }
             })
@@ -386,6 +421,12 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         userId: user,
                         role: "KINDERHUTTE",
                         gottesdienstId: formData.get("id") as string
+                    })),
+                    // @ts-ignore
+                    ...(formData.getAll("musik") as string[]).map(user => ({
+                        userId: user,
+                        role: "MUSIK",
+                        gottesdienstId: formData.get("id") as string
                     }))
                 ]
             })
@@ -396,6 +437,12 @@ const page = async ({params}: { params: { locationId: string } }) => {
     async function handleDelete(item: any) {
         "use server";
         const prisma = new PrismaClient()
+        await prisma.gottesdienst_User.deleteMany({
+            where: {
+                gottesdienstId: item.id
+            }
+        })
+
         await prisma.gottesdienst.delete({
             where: {
                 id: item.id
@@ -411,8 +458,12 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
             >
                 <CustomTable columns={columns} data={groupedGottesdienste} dropdown={dropdown} tableName={'planer'}
-                             addButton={user_location_role  != RelationRoleLocation.VIEWER} handleSave={handleSave} editButton={user_location_role  != RelationRoleLocation.VIEWER} deleteButton={user_location_role  != RelationRoleLocation.VIEWER}
+                             addButton={user_location_role != RelationRoleLocation.VIEWER} handleSave={handleSave}
+                             editButton={user_location_role != RelationRoleLocation.VIEWER}
+                             deleteButton={user_location_role != RelationRoleLocation.VIEWER}
+                             handleDelete={handleDelete}
                              selectMenu={true}
+                             exportButton={true}
 
                 />
             </main>
