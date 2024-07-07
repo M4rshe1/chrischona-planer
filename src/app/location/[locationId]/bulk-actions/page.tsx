@@ -25,7 +25,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
             }
 
         })
-
     } catch (e) {
         console.error(e)
     } finally {

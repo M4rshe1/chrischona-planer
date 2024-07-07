@@ -3,7 +3,6 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
-import {dateOptions} from "@/lib/types";
 
 const CustomTable = ({
                          columns,
@@ -17,7 +16,8 @@ const CustomTable = ({
                          actions,
                          selectMenu,
                          handleDelete,
-                         exportButton
+                         exportButton,
+                         fullscreenButton
                      }: {
     columns: any[],
     data: any,
@@ -30,13 +30,15 @@ const CustomTable = ({
     deleteButton?: boolean,
     actions?: any,
     selectMenu: boolean,
-    exportButton?: boolean
+    exportButton?: boolean,
+    fullscreenButton?: boolean
 }) => {
     console.log(data)
     const formRef = useRef<HTMLDivElement>(null);
     const [selected, setSelected] = useState<string>(dropdown[(dropdown.length - 1)])
     const [displayedColumns, setDisplayedColumns] = useState<any[]>(columns);
     const [showModal, setShowModal] = useState<boolean>(false);
+    const [tableFullscreen, setTableFullscreen] = useState<boolean>(false);
 
     const handleAdd = () => {
         setShowModal(true);
@@ -198,13 +200,13 @@ const CustomTable = ({
 
     return (
         <div
-            className={"w-full h-full flex flex-col gap-4 relative"}
+            className={"w-full h-full flex flex-col gap-4 " + (tableFullscreen ? "p-4 fixed inset-0 z-[1000] bg-base-100" : "relative min-h-screen")}
         >
             <div
                 className={"flex flex-row justify-between items-center w-full"}
             >
                 <div
-                className={"flex flex-row gap-2"}
+                    className={"flex flex-row gap-2"}
                 >
 
                     {
@@ -226,6 +228,21 @@ const CustomTable = ({
                                 onClick={handleExport}
                                 data-tip={"Exportieren"}
                             ><FontAwesomeIcon icon={fas.faFileArrowDown}/></div> : null
+                    }
+                    {
+                        fullscreenButton ?
+                            <div
+                                role={"button"}
+                                className={"btn btn-neutral tooltip tooltip-right flex items-center justify-center aspect-square"}
+                                onClick={() => setTableFullscreen(!tableFullscreen)}
+                                data-tip={"Tabelle maximieren"}
+                            >
+                                {
+                                    tableFullscreen ?
+                                        <FontAwesomeIcon icon={fas.faCompress}/>
+                                        : <FontAwesomeIcon icon={fas.faExpand}/>
+                                }
+                            </div> : null
                     }
                 </div>
                 <div>

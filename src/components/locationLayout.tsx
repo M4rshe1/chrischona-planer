@@ -16,7 +16,6 @@ const LocationLayout = ({children, location, locationId, session, user_location_
     session: UserSession,
     user_location_role: RelationRoleLocation
 }) => {
-
     const localstorage = localStorage.getItem("location_layout_expanded");
     const [expanded, setExpanded] = useState(localstorage ? JSON.parse(localstorage) : true);
     const current_path = usePathname();
@@ -24,9 +23,10 @@ const LocationLayout = ({children, location, locationId, session, user_location_
     window.addEventListener("resize", () => {
         // add a bit of delay to prevent flickering
         if (window.innerWidth < 768) {
-            setTimeout(() => {
-                setExpanded(false)
-            }, 100)
+            setExpanded(false)
+        } else {
+            const localstorage = localStorage.getItem("location_layout_expanded");
+            setExpanded(localstorage ? JSON.parse(localstorage) : true);
         }
     });
 
@@ -40,13 +40,13 @@ const LocationLayout = ({children, location, locationId, session, user_location_
             className={"w-full h-full grid grid-cols-[auto_1fr] items-center justify-start grow"}
         >
             <aside
-                className={"flex flex-col items-center w-full h-full bg-base-200 text-base-content md:border-t-2 border-base-300"}
+                className={"flex flex-col items-center w-full h-full bg-base-200 text-base-content  border-base-300"}
             >
                 <h1
-                    className={"w-full font-bold p-4 text-nowrap" + (expanded ? " block" : " hidden")}
+                    className={"w-full font-bold p-4 text-nowrap border-base-300 " + (expanded ? "border-y-2 block" : " hidden")}
                 >{location?.name}</h1>
                 <div
-                    className={"flex flex-col gap-4 w-full md:border-t-2 border-base-300 text-lg"}
+                    className={"flex flex-col gap-4 w-full text-lg"}
                 >
                     <ul
                         className={"menu menu-md gap-2"}

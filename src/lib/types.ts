@@ -1,1 +1,1 @@
-export const dateOptions = {weekay: 'long', year: 'numedric', month: 'long', day: 'numeric'}
+export const dateOptions = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}

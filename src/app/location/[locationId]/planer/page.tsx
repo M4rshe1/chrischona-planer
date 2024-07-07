@@ -464,6 +464,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                              handleDelete={handleDelete}
                              selectMenu={true}
                              exportButton={true}
+                             fullscreenButton={true}
 
                 />
             </main>
