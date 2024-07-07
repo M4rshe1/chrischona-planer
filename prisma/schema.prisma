@@ -34,18 +34,34 @@ enum RelationRoleGottesdienst {
   TEAM
 }
 
+enum Status {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
 model User {
-  id                String              @id @unique @default(cuid())
-  email             String              @unique
-  name              String?
-  password          String
-  role              SiteRole            @default(USER)
-  locations         user_location[]
-  Gottesdienst_User Gottesdienst_User[]
-  Abwesenheitens    Abwesenheitens[]
-  deleted           Boolean             @default(false)
-  access_requests   access_request[]
-  teams             team[]
+  id              String              @id @unique @default(cuid())
+  email           String              @unique
+  name            String?
+  password        String
+  role            SiteRole            @default(USER)
+  locations       user_location[]
+  Gottesdienste   Gottesdienst_User[]
+  deleted         Boolean             @default(false)
+  access_requests access_request[]
+  teams           team[]
+  createdAt       DateTime            @default(now())
+  abwesenheiten   abwesenheit[]
+}
+
+model abwesenheit {
+  id       String   @id @default(cuid())
+  userId   String
+  user     User     @relation(fields: [userId], references: [id])
+  dateFrom DateTime
+  dateTo   DateTime
+  reason   String?
 }
 
 model Location {
@@ -63,27 +79,16 @@ model Gottesdienst {
   locationId        String
   location          Location            @relation(fields: [locationId], references: [id])
   anlass            String?
-  date              DateTime
+  dateFrom          DateTime            @default(now())
+  dateUntill        DateTime            @default(now())
   abendmahl         Boolean             @default(false)
-  comment           String?
-  pastor            String?
+  kommentar         String?
+  externerPastor    String?
   thema             String?
   textstelle        String?
   kontakt           String?
   Gottesdienst_User Gottesdienst_User[]
   findetStatt       Boolean             @default(true)
-}
-
-model Abwesenheitens {
-  id         String    @id @default(cuid())
-  userId     String
-  user       User      @relation(fields: [userId], references: [id])
-  dateFrom   DateTime
-  dateTo     DateTime
-  reason     String?
-  isApproved Boolean   @default(false)
-  approvedBy String?
-  approvedAt DateTime?
 }
 
 model Gottesdienst_User {
@@ -124,6 +129,7 @@ model access_request {
   approvedBy String?
   approvedAt DateTime?
   relation   RelationRoleLocation @default(VIEWER)
+  status     Status               @default(PENDING)
 }
 
 model team {

@@ -1,15 +1,12 @@
-
-
 import LocationLayout from "@/components/locationLayout";
 import {authOptions, UserSession} from "@/app/api/auth/[...nextauth]/route";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {headers} from "next/headers";
 import {PrismaClient} from "@prisma/client";
 
-const prisma = new PrismaClient()
 
 const page = async ({params}: { params: { locationId: string } }) => {
+    const prisma = new PrismaClient()
     const session: UserSession | null = await getServerSession(authOptions)
     if (session === null) {
         redirect("/auth/login")
@@ -45,7 +42,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
             <div>
-                <h1>Access Page</h1>
+                <h1>Bulk Actions Page</h1>
             </div>
         </LocationLayout>
     )

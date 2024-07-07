@@ -12,7 +12,7 @@ const Header = async () => {
     const themes: string[] = ["dark", "light"]
     return (
         <header
-            className=" bg-base-200  sticky top-0 z-50 w-full h-16 flex items-center justify-between"
+            className=" bg-base-200 top-0 z-50 w-full h-16 flex items-center justify-between"
         >
             <div className="navbar">
                 <div className="flex-1">
@@ -22,15 +22,8 @@ const Header = async () => {
                     </Link>
                 </div>
                 <div>
-
-                    {/*<div className="flex-1 btn btn-ghost ml-2">*/}
-                    {/*    <Link href={'/location'}>Locations</Link>*/}
-                    {/*</div>*/}
                     <div className="flex-1 btn btn-ghost ml-2">
-                        <Link href={'/events'}>Events</Link>
-                    </div>
-                    <div className="flex-1 btn btn-ghost ml-2">
-                        <Link href={'/absences'}>Absenzen</Link>
+                        <Link href={'/account/absences'}>Absenzen</Link>
                     </div>
                     <div title="Change Theme"
                          className="dropdown dropdown-end hidden [@supports(color:oklch(0%_0_0))]:block ml-2">

@@ -27,6 +27,24 @@ async function main() {
             name: 'Rolf Sen',
             password: await hash('password', 10),
             role: SiteRole.USER,
+        },
+        {
+            email: 'ruth.hallauer@gmail.com',
+            name: 'Ruth Hallauer',
+            password: await hash('password', 10),
+            role: SiteRole.USER,
+        },
+        {
+            email: 'andy.vogeli@gmail.com',
+            name: 'Andy Vögeli',
+            password: await hash('password', 10),
+            role: SiteRole.USER,
+        },
+        {
+            email: 'susanne.bosshard@gmail.com',
+            name: 'Susanne Bosshard',
+            password: await hash('password', 10),
+            role: SiteRole.USER,
         }
     ];
 
@@ -47,6 +65,18 @@ async function main() {
                     {
                         user: {connect: {email: 'milean.selemba@gmail.com'}},
                         relation: RelationRoleLocation.OWNER
+                    },
+                    {
+                        user: {connect: {email: 'ruth.hallauer@gmail.com'}},
+                        relation: RelationRoleLocation.TEAMMEMBER
+                    },
+                    {
+                        user: {connect: {email: 'andy.vogeli@gmail.com'}},
+                        relation: RelationRoleLocation.TEAMMEMBER
+                    },
+                    {
+                        user: {connect: {email: 'susanne.bosshard@gmail.com'}},
+                        relation: RelationRoleLocation.TEAMMEMBER
                     },
                 ]
             },

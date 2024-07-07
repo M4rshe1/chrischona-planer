@@ -39,9 +39,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
         return notFound()
     }
 
-    const header = headers()
-    const current_path = header.get("referer")?.split("/")?.pop()
-
     const user_location_role = location.Users.find((user) => user.userId === session.user.id)?.relation ?? "VIEWER"
 
     return (
