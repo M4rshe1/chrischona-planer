@@ -2,7 +2,7 @@ import LocationLayout from "@/components/locationLayout";
 import {authOptions, UserSession} from "@/app/api/auth/[...nextauth]/route";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, Status} from "@prisma/client";
+import {PrismaClient, RelationRoleLocation, Status} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import CustomTable from "@/components/customTable";
@@ -73,31 +73,46 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "id",
             label: "ID",
             type: "hidden",
-            toggle: false
+            toggle: false,
+            disabled: true
         },
         {
             name: "message",
             label: "Nachricht",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: true
         },
         {
             name: "username",
             label: "Benutzer",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: true
         },
         {
             name: "email",
             label: "Email",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: true
         },
         {
             name: "relation",
             label: "Relation",
-            type: "text",
-            toggle: true
+            type: "select",
+            options: Object.values(RelationRoleLocation).map((value) => {
+                return {
+                    name: value,
+                    id: value
+                }
+            }),
+            keys: {
+                value: "name",
+                id: "id"
+            },
+            toggle: true,
+            disabled: false
         }
     ]
 

@@ -110,12 +110,13 @@ model user_location {
 }
 
 model access_code {
-  id         String    @id @default(cuid())
-  locationId String
-  location   Location  @relation(fields: [locationId], references: [id])
-  validuntil DateTime?
-  maxuses    Int?
-  used       Int       @default(0)
+  id             String    @id @default(cuid())
+  locationId     String
+  location       Location  @relation(fields: [locationId], references: [id])
+  validuntil     DateTime?
+  maxuses        Int?
+  used           Int       @default(0)
+  approvalNeeded Boolean   @default(false)
 }
 
 model access_request {

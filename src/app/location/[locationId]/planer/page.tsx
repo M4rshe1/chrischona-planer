@@ -2,7 +2,7 @@ import LocationLayout from "@/components/locationLayout";
 import {authOptions, UserSession} from "@/app/api/auth/[...nextauth]/route";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient} from "@prisma/client";
+import {PrismaClient, RelationRoleLocation} from "@prisma/client";
 import CustomTable from "@/components/customTable";
 import {revalidatePath} from "next/cache";
 
@@ -115,62 +115,72 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "id",
             label: "ID",
             type: "hidden",
-            toggle: false
+            toggle: false,
+            disabled: true
         },
         {
             name: "dateFrom",
             label: "Datum von",
             type: "datetime",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "dateUntill",
             label: "Datum bis",
             type: "datetime",
-            toggle: false
+            toggle: false,
+            disabled: false
         },
         {
             name: "anlass",
             label: "Anlass",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "kommentar",
             label: "Kommentar",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "theme",
             label: "Thema",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
 
         {
             name: "textstelle",
             label: "Textstelle",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "externerPastor",
             label: "Externer Prediger",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "findetStatt",
             label: "Findet statt",
             type: "boolean",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "abendmahl",
             label: "Abendmahl",
             type: "boolean",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "technikBild",
@@ -182,7 +192,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 value: "name",
                 id: "id"
             },
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "technikTon",
@@ -194,7 +205,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 value: "name",
                 id: "id"
             },
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "prediger",
@@ -206,7 +218,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 value: "name",
                 id: "id"
             },
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "moderator",
@@ -218,7 +231,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 value: "name",
                 id: "id"
             },
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "kindertreff",
@@ -230,7 +244,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 value: "name",
                 id: "id"
             },
-            toggle: true
+            toggle: true,
+            disabled: false
         },
         {
             name: "kinderhute",
@@ -242,14 +257,16 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 value: "name",
                 id: "id"
             },
-            toggle: true
+            toggle: true,
+            disabled: false
 
         },
         {
             name: "kontakt",
             label: "Kontakt",
             type: "text",
-            toggle: true
+            toggle: true,
+            disabled: false
         },
     ]
     let dropdown: string[] = []
@@ -260,10 +277,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     async function handleSave(formData: FormData) {
         "use server";
         const prisma = new PrismaClient()
-        console.log(...(formData.getAll("kindertreff") as string[]).map(user => ({
-            userId: user,
-            role: "KINDERTREFF"
-        })))
+        console.log(formData)
         if (!formData.get("id")) {
             const dateUntill = new Date(formData.get("dateFrom") as string)
             dateUntill.setHours(dateUntill.getHours() + 3)
@@ -379,6 +393,17 @@ const page = async ({params}: { params: { locationId: string } }) => {
         return revalidatePath(`/location/${locationId}/planer`)
     }
 
+    async function handleDelete(item: any) {
+        "use server";
+        const prisma = new PrismaClient()
+        await prisma.gottesdienst.delete({
+            where: {
+                id: item.id
+            }
+        })
+        return revalidatePath(`/location/${locationId}/planer`)
+    }
+
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
@@ -386,7 +411,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
             >
                 <CustomTable columns={columns} data={groupedGottesdienste} dropdown={dropdown} tableName={'planer'}
-                             addButton={true} handleSave={handleSave} editButton={true} deleteButton={true}
+                             addButton={user_location_role  != RelationRoleLocation.VIEWER} handleSave={handleSave} editButton={user_location_role  != RelationRoleLocation.VIEWER} deleteButton={user_location_role  != RelationRoleLocation.VIEWER}
                              selectMenu={true}
 
                 />

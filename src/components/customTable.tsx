@@ -4,18 +4,20 @@ import {useEffect, useMemo, useRef, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 
-const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave, editButton, deleteButton, actions, selectMenu}: {
+const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave, editButton, deleteButton, actions, selectMenu, handleDelete}: {
     columns: any[],
     data: any,
     dropdown: string[],
     tableName: string,
     addButton?: boolean,
     handleSave?: any,
+    handleDelete?: any,
     editButton?: boolean,
     deleteButton?: boolean,
     actions?: any,
     selectMenu: boolean
 }) => {
+    console.log(data)
     const formRef = useRef<HTMLDivElement>(null);
     const [selected, setSelected] = useState<string>(dropdown[(dropdown.length - 1)])
     const [displayedColumns, setDisplayedColumns] = useState<any[]>(columns);
@@ -47,17 +49,23 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
         setModalData(item);
     }
 
-    const handleDelete = (item: any) => {
+    const handleRowDelete = (item: any) => {
         const confirmDelete = confirm("Möchten Sie diesen Eintrag wirklich löschen?");
-        console.log(item)
+        if (confirmDelete) {
+            handleDelete(item);
+        }
     }
 
     const clearModalData = () => {
         setModalData({
             ...columns.map((column) => {
+                const datetime = new Date();
+                datetime.setDate(datetime.getDate() + (7 - datetime.getDay() + 7) % 7);
+                datetime.setHours(9);
+                datetime.setMinutes(45);
                 return {
                     name: column.name,
-                    value: ""
+                    value: column.type === "boolean" ? false : column.type === "select" ? [] : column.type === "datetime" ? datetime.toISOString().slice(0, 16) : ""
                 }
             })
         }, true);
@@ -74,6 +82,10 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
                         // @ts-ignore
                         input.checked = data[i].value;
                         // @ts-ignore
+                    } else if (input.type === "datetime-local") {
+                        // @ts-ignore
+                        input.value = new Date(data[i].value).toISOString().slice(0, 16);
+
                     } else if (input.querySelectorAll("option").length >= 1) {
                         // @ts-ignore
                         if (clear) {
@@ -272,7 +284,7 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
                                                         <button
                                                             className={"btn btn-sm btn-neutral hover:bg-error hover:text-white tooltip"}
                                                             data-tip={"Löschen"}
-                                                            onClick={() => handleDelete(item)}
+                                                            onClick={() => handleRowDelete(item)}
                                                         >
                                                             <FontAwesomeIcon icon={fas.faTrash}/>
                                                         </button> : null
@@ -360,13 +372,10 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
                         style={{maxHeight: "calc(100vh - 10rem)"}}>
                         {
                             columns.map((column, index) => {
-                                if (!column.toggle) {
-                                    return null;
-                                }
                                 return (
                                     <div
                                         key={index}
-                                        className={"flex flex-col gap-2 w-full"}
+                                        className={"flex flex-col gap-2 w-full " + ((column.type === "hidden" || !column.toggle) ? "hidden" : "")}
                                     >
                                         <label
                                             className={"text-sm"}
@@ -380,12 +389,20 @@ const CustomTable = ({columns, data, dropdown, tableName, addButton, handleSave,
                                                     className={"input input-bordered"}
                                                     name={column.name}
                                                 /> :
-                                                column.type === "datetime" ?
+                                                column.type === "number" ?
                                                     <input
-                                                        type="datetime-local"
+                                                        type="number"
                                                         className={"input input-bordered"}
                                                         name={column.name}
+                                                        min={column.min}
+                                                        max={column.max}
                                                     /> :
+                                                    column.type === "datetime" ?
+                                                        <input
+                                                            type="datetime-local"
+                                                            className={"input input-bordered"}
+                                                            name={column.name}
+                                                        /> :
                                                     column.type === "boolean" ?
                                                         <input
                                                             type="checkbox"
