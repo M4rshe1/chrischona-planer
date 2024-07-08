@@ -465,7 +465,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
                              selectMenu={true}
                              exportButton={true}
                              fullscreenButton={true}
-
                 />
             </main>
         </LocationLayout>

@@ -6,7 +6,7 @@ import {RelationRoleLocation} from "@prisma/client";
 import {usePathname} from "next/navigation";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 
 const LocationLayout = ({children, location, locationId, session, user_location_role}: {
@@ -16,24 +16,34 @@ const LocationLayout = ({children, location, locationId, session, user_location_
     session: UserSession,
     user_location_role: RelationRoleLocation
 }) => {
-    const localstorage = localStorage.getItem("location_layout_expanded");
-    const [expanded, setExpanded] = useState(localstorage ? JSON.parse(localstorage) : true);
+    const [expanded, setExpanded] = useState(true);
     const current_path = usePathname();
+    useEffect(() => {
+        // Check if running in the browser (where `window` exists)
+        if (typeof window !== 'undefined') {
+            const savedTheme = JSON.parse(localStorage.getItem("location_layout_expanded") ?? "true");
+            setExpanded(savedTheme);
 
-    window.addEventListener("resize", () => {
-        // add a bit of delay to prevent flickering
-        if (window.innerWidth < 768) {
-            setExpanded(false)
-        } else {
-            const localstorage = localStorage.getItem("location_layout_expanded");
-            setExpanded(localstorage ? JSON.parse(localstorage) : true);
+            const handleResize = () => {
+                if (window.innerWidth < 768) {
+                    setExpanded(false);
+                } else {
+                    const localstorage = localStorage.getItem("location_layout_expanded");
+                    setExpanded(localstorage ? JSON.parse(localstorage) : true);
+                }
+            };
+
+            window.addEventListener("resize", handleResize);
+            return () => window.removeEventListener("resize", handleResize);
         }
-    });
+    }, []);
 
     const handleLayoutChange = () => {
-        setExpanded(!expanded);
-        localStorage.setItem("location_layout_expanded", JSON.stringify(!expanded));
-    }
+        if (typeof window !== 'undefined') {
+            setExpanded(!expanded);
+            localStorage.setItem("location_layout_expanded", JSON.stringify(!expanded));
+        }
+    };
 
     return (
         <div

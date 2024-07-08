@@ -407,8 +407,9 @@ const CustomTable = ({
                                                             column.type === "boolean" ?
                                                                 <input
                                                                     type="checkbox"
-                                                                    checked={item[column.name]}
-                                                                    disabled={true}
+                                                                    defaultChecked={item[column.name]}
+                                                                    disabled={false}
+                                                                    className={"checkbox checkbox-primary checkbox-sm pointer-events-none"}
                                                                 /> :
                                                                 column.type === "select" ?
                                                                     Object.keys(item[column.name]).map((key: any, index: number) => {

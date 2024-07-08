@@ -2,7 +2,7 @@ import LocationLayout from "@/components/locationLayout";
 import {authOptions, UserSession} from "@/app/api/auth/[...nextauth]/route";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient} from "@prisma/client";
+import {PrismaClient, RelationRoleLocation} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import CustomTable from "@/components/customTable";
 
@@ -81,19 +81,19 @@ const page = async ({params}: { params: { locationId: string } }) => {
             max: 100
         },
         {
+            name: "approvalNeeded",
+            label: "Freigabe benötigt",
+            type: "boolean",
+            toggle: true,
+            disabled: false
+        },
+        {
             name: "link",
             label: "Link",
             type: "hidden",
             toggle: true,
             disabled: true
         },
-        {
-            name: "approvalNeeded",
-            label: "Freigabe benötigt",
-            type: "boolean",
-            toggle: true,
-            disabled: false
-        }
     ]
 
     async function handleSave(formData: FormData) {
@@ -106,7 +106,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                     data: {
                         locationId: locationId,
                         validuntil: validuntil.toISOString(),
-                        maxuses: parseInt(formData.get("maxusers") as string),
+                        maxuses: parseInt(formData.get("maxuses") as string),
                         used: 0,
                         approvalNeeded: formData.get("approvalNeeded") === "on",
                     }
@@ -124,7 +124,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                     },
                     data: {
                         validuntil: validuntil.toISOString(),
-                        maxuses: parseInt(formData.get("maxusers") as string),
+                        maxuses: parseInt(formData.get("maxuses") as string),
                         approvalNeeded: formData.get("approvalNeeded") === "on",
                     }
                 })
@@ -163,7 +163,10 @@ const page = async ({params}: { params: { locationId: string } }) => {
             >
 
                 <CustomTable columns={columns} data={groupedCodes} dropdown={dropdown} tableName={'access_codes'}
-                             addButton={true} editButton={true} deleteButton={true} handleSave={handleSave}
+                             addButton={user_location_role != RelationRoleLocation.VIEWER}
+                             editButton={user_location_role != RelationRoleLocation.VIEWER}
+                             deleteButton={user_location_role != RelationRoleLocation.VIEWER}
+                             handleSave={handleSave}
                              selectMenu={false}
 
                 />

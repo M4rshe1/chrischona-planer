@@ -32,12 +32,21 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/', request.url));
         }
 
+        const managerRoutes = [ '/location/[locationId]/access', '/location/[locationId]/requests' ];
+
         if (url.pathname.startsWith('/location') && token?.role !== 'ADMIN') {
             const locationId = extractLocationIdFromPath(url.pathname);
             // @ts-ignore
             if (!locationId || !(token?.locations.map((location) => location.id).includes(locationId))) {
                 return NextResponse.redirect(new URL('/access/request/' + locationId, request.url));
             }
+
+            // @ts-ignore
+            if (url.pathname.startsWith('/location/[locationId]/access') && token?.locations.find((location) => location.id === locationId)?.relation !== 'MANAGER') {
+                return NextResponse.redirect(new URL('/location/' + locationId, request.url));
+            }
+
+
         }
 
         return NextResponse.next();
