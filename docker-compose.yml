@@ -1,0 +1,25 @@
+version: '3.7'
+services:
+  planer:
+    image: planer
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXTAUTH_URL=http://localhost:3000
+      - DATABASE_URL=postgresql://psql_admin:Bananen.123@192.168.1.3:5432/db_chrischonaPlaner
+      - NEXTAUTH_SECRET=secret
+    command: npm run dev
+    depends_on:
+      - db
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: psql_admin
+      POSTGRES_PASSWORD: Bananen.123
+      POSTGRES_DB: db_chrischonaPlaner
+    ports:
+      - "5432:5432"

@@ -1,7 +1,7 @@
 import {PrismaClient} from "@prisma/client";
 import {hash} from 'bcrypt'
 import Link from "next/link";
-import {UserSession} from "@/app/api/auth/[...nextauth]/route";
+import {UserSession} from "@/lib/route";
 import {getServerSession} from "next-auth";
 import {redirect} from "next/navigation";
 

@@ -1,7 +1,8 @@
 
 
 import LocationLayout from "@/components/locationLayout";
-import {authOptions, UserSession} from "@/app/api/auth/[...nextauth]/route";
+import {authOptions} from '@/lib/authOptions';
+import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
 import {headers} from "next/headers";

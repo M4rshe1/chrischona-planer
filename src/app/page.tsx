@@ -1,9 +1,10 @@
 import {getServerSession} from "next-auth";
-import {authOptions, UserSession} from "@/app/api/auth/[...nextauth]/route";
+import {authOptions} from '@/lib/authOptions';
+import {UserSession} from "@/lib/types";
 import {PrismaClient} from "@prisma/client";
 import Link from "next/link";
 import {LoginButton, RegisterButton} from "@/lib/auth";
-import {dateOptions} from "@/lib/types";
+import Calendar from "@/components/calendar";
 
 
 const Home = async () => {
@@ -43,26 +44,28 @@ const Home = async () => {
         });
         const locationIds = Locations?.locations.map((location) => location.location.id);
         const now = new Date().toISOString()
-        Events = await prisma.gottesdienst_User.findMany({
+        Events = await prisma.gottesdienst.findMany({
             where: {
-                userId: session.user.id,
-                gottesdienst: {
-                    dateUntill: {gte: now},
-                    locationId: {in: locationIds},
-                },
+                locationId: {in: locationIds},
             },
-            select: {
-                userId: true,
-                role: true,
-                gottesdienst: true,
+            include: {
+                Gottesdienst_User: {
+                    select: {
+                        role: true,
+                        userId: true
+                    }
+                },
+                location: {
+                    select: {
+                        name: true,
+                        address: true
+                    }
+                }
             },
             orderBy: {
-                gottesdienst: {
-                    dateFrom: 'asc'
-                }
+                dateFrom: 'asc'
             }
         });
-
     } catch (e) {
         console.error(e)
     } finally {
@@ -103,40 +106,16 @@ const Home = async () => {
             <div
                 className="flex flex-col items-start gap-2 mt-8 w-full px-4 py-8"
             >
-                <h1 className="text-4xl font-bold text-center">Deine Events</h1>
-                {
-                    // @ts-ignore
-                    Events?.length > 0 ?
-                        (
-                            <div
-                                className={"grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 items-center w-full mt-4"}
-                            >
-                                {
+                <h1 className="text-4xl font-bold text-center">Anstehende Events</h1>
+                <div
+                    className={"w-full mt-4 items-center"}
+                >
 
-                                    Events?.map((event, index) => {
-                                        return (
-                                            <Link
-                                                href={'/location/' + event.gottesdienst.locationId + '/planer/'}
-                                                key={index}
-                                                className="flex justify-between mt-4 bg-base-200 rounded-box p-4 border-neutral border-2 hover:shadow-lg h-full">
-                                                <div>
-                                                    <h2 className={"text-xl font-bold" + (event.gottesdienst.findetStatt ? "" : " line-through")}
-                                                    >{event.gottesdienst.anlass}
-                                                        {event.gottesdienst.abendmahl ? (<span className={"tooltip"}
-                                                                                               data-tip={"Gottesdienst mit Abendmahl"}>🥖</span>) : ""}
-                                                    </h2>
-                                                    {/* @ts-ignore */}
-                                                    <p>{event.gottesdienst.dateFrom.toLocaleDateString('de-CH', dateOptions)}</p>
-                                                    <p className={"text-sm text-neutral-500 font-semibold"}>{event.role}</p>
-                                                    <p>{event.gottesdienst.kommentar}</p>
-                                                </div>
-                                            </Link>
-                                        )
-                                    })
-                                }
-                            </div>
-                        ) : <p className="text-lg text-center">Du hast akktuell keine anstehenden Gottesdienste</p>
-                }
+                    {
+                        <Calendar data={Events} session={session}/>
+                    }
+                </div>
+
             </div>
         </main>
     );

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {UserSession} from "@/app/api/auth/[...nextauth]/route";
+import {UserSession} from "@/lib/route";
 import {RelationRoleLocation} from "@prisma/client";
 import {usePathname} from "next/navigation";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";

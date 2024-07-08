@@ -1,6 +1,7 @@
 import React from 'react'
 import {getServerSession} from 'next-auth'
-import {authOptions, UserSession} from '@/app/api/auth/[...nextauth]/route'
+import {authOptions} from '@/lib/authOptions'
+import {UserSession} from '@/lib/types'
 import {LoginButton, LogoutButton, RegisterButton} from '@/lib/auth'
 import Link from "next/link";
 import ThemeButton from "@/components/themeButton"

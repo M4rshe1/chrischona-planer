@@ -10,7 +10,7 @@ function extractLocationIdFromPath(pathname: string): string | null {
 }
 
 export async function middleware(request: NextRequest) {
-    console.log("Middleware triggered:", request.url);
+    // console.log("Middleware triggered:", request.url);
 
     try {
         const token: JWT | null = await getToken({req: request});
