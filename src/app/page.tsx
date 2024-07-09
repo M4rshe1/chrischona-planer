@@ -2,9 +2,9 @@ import {getServerSession} from "next-auth";
 import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {PrismaClient} from "@prisma/client";
-import Link from "next/link";
 import {LoginButton, RegisterButton} from "@/lib/auth";
 import Calendar from "@/components/calendar";
+import LocationCard from "@/components/locationCard";
 
 
 const Home = async () => {
@@ -43,7 +43,6 @@ const Home = async () => {
             }
         });
         const locationIds = Locations?.locations.map((location) => location.location.id);
-        const now = new Date().toISOString()
         Events = await prisma.gottesdienst.findMany({
             where: {
                 locationId: {in: locationIds},
@@ -88,16 +87,7 @@ const Home = async () => {
                     {
                         Locations?.locations.map((location, index) => {
                             return (
-                                <Link href={'/location/' + location.location.id} key={index}
-                                      className="flex justify-between mt-4 bg-base-200 rounded-box p-4 border-neutral border-2 hover:shadow-lg h-full">
-                                    <div>
-                                        <h2 className="text-xl font-bold">{location.location.name}</h2>
-                                        <p>{location.location.address}</p>
-                                        <p
-                                            className={"text-sm text-neutral-500 font-semibold"}
-                                        >{location.relation}</p>
-                                    </div>
-                                </Link>
+                                <LocationCard location={location} key={index}/>
                             )
                         })
                     }

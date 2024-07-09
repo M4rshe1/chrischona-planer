@@ -23,7 +23,7 @@ enum RelationRoleGottesdienst {
   TECHNIK_BILD
   TECHNIK_TON
   TECHNIK_STREAM
-  PASTOR
+  PREDIGER
   MODERATOR
   MUSIK
   KINDERHUTTE
@@ -50,13 +50,13 @@ model User {
   Gottesdienste   Gottesdienst_User[]
   deleted         Boolean             @default(false)
   access_requests access_request[]
-  teams           team[]
+  teams           team_user[]
   createdAt       DateTime            @default(now())
   abwesenheiten   abwesenheit[]
 }
 
 model abwesenheit {
-  id       String   @id @default(cuid())
+  id       String   @id @unique @default(cuid())
   userId   String
   user     User     @relation(fields: [userId], references: [id])
   dateFrom DateTime
@@ -65,17 +65,18 @@ model abwesenheit {
 }
 
 model Location {
-  id              String           @id @default(cuid())
+  id              String           @id @unique @default(cuid())
   name            String           @unique
   address         String
   Gottesdienst    Gottesdienst[]
   Users           user_location[]
   access_codes    access_code[]
   access_requests access_request[]
+  teams           team[]
 }
 
 model Gottesdienst {
-  id                String              @id @default(cuid())
+  id                String              @id @unique @default(cuid())
   locationId        String
   location          Location            @relation(fields: [locationId], references: [id])
   anlass            String?
@@ -83,7 +84,7 @@ model Gottesdienst {
   dateUntill        DateTime            @default(now())
   abendmahl         Boolean             @default(false)
   kommentar         String?
-  externerPastor    String?
+  externerPrediger  String?
   thema             String?
   textstelle        String?
   kontakt           String?
@@ -92,7 +93,7 @@ model Gottesdienst {
 }
 
 model Gottesdienst_User {
-  id             String                   @id @default(cuid())
+  id             String                   @id @unique @default(cuid())
   gottesdienstId String
   gottesdienst   Gottesdienst             @relation(fields: [gottesdienstId], references: [id])
   userId         String
@@ -101,7 +102,7 @@ model Gottesdienst_User {
 }
 
 model user_location {
-  id         String               @id @default(cuid())
+  id         String               @id @unique @default(cuid())
   userId     String
   locationId String
   user       User                 @relation(fields: [userId], references: [id])
@@ -110,7 +111,7 @@ model user_location {
 }
 
 model access_code {
-  id             String    @id @default(cuid())
+  id             String    @id @unique @default(cuid())
   locationId     String
   location       Location  @relation(fields: [locationId], references: [id])
   validuntil     DateTime?
@@ -120,7 +121,7 @@ model access_code {
 }
 
 model access_request {
-  id         String               @id @default(cuid())
+  id         String               @id @unique @default(cuid())
   userId     String
   locationId String
   user       User                 @relation(fields: [userId], references: [id])
@@ -134,8 +135,18 @@ model access_request {
 }
 
 model team {
-  id     String                   @id @default(cuid())
+  id              String                   @id @unique @default(cuid())
+  name            RelationRoleGottesdienst @default(TEAM)
+  locationId      String
+  location        Location                 @relation(fields: [locationId], references: [id])
+  name_locationId String                   @unique
+  users           team_user[]
+}
+
+model team_user {
+  id     String @id @unique @default(cuid())
   userId String
-  user   User                     @relation(fields: [userId], references: [id])
-  name   RelationRoleGottesdienst @default(TEAM)
+  teamId String
+  user   User   @relation(fields: [userId], references: [id])
+  team   team   @relation(fields: [teamId], references: [id])
 }

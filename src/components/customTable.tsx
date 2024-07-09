@@ -3,6 +3,7 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
+import { useDraggable } from "react-use-draggable-scroll";
 
 const CustomTable = ({
                          columns,
@@ -33,12 +34,27 @@ const CustomTable = ({
     exportButton?: boolean,
     fullscreenButton?: boolean
 }) => {
-    console.log(data)
     const formRef = useRef<HTMLDivElement>(null);
-    const [selected, setSelected] = useState<string>(dropdown[(dropdown.length - 1)])
+    const [selected, setSelected] = useState<string>(dropdown[(dropdown.length - 1)] || "keine");
     const [displayedColumns, setDisplayedColumns] = useState<any[]>(columns);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [tableFullscreen, setTableFullscreen] = useState<boolean>(false);
+
+
+    function fixDropdown(force: boolean = false) {
+        if (dropdown.length === 0 || force) {
+            dropdown = ["keine"];
+            data = {
+                "keine": []
+            }
+        }
+    }
+
+    fixDropdown();
+
+    if (!dropdown.includes(selected)) {
+        setSelected(dropdown[(dropdown.length - 1)]);
+    }
 
     const handleAdd = () => {
         setShowModal(true);
@@ -54,6 +70,7 @@ const CustomTable = ({
         clearModalData();
         handleSave(formData);
     }
+
 
     const handleEdit = (item: any) => {
         setShowModal(true);
@@ -92,7 +109,7 @@ const CustomTable = ({
         const csvHeader = columns.map((column) => {
             return column.label;
         }).join(",");
-        const csvData = data[selected].map((row: any) => {
+        const csvData = data[selected]?.map((row: any) => {
             return columns.map((column) => {
                 switch (column.type) {
                     case "select":
@@ -184,6 +201,10 @@ const CustomTable = ({
         localStorage.setItem("chrischona_planer_ " + tableName + "_columns", JSON.stringify(newColumns));
     };
 
+    const dragRef = useRef<HTMLDivElement>(null)
+    // @ts-ignore
+    const { events } = useDraggable(dragRef)
+
     // Optimize dropdown map rendering
     const dropdownItems = useMemo(() => dropdown?.map((item: string) => {
         return (
@@ -265,7 +286,6 @@ const CustomTable = ({
                                     return (
                                         <li
                                             key={index}
-
                                         >
                                             <label
                                                 className={"flex items-center flex-row cursor-pointer hover:bg-base-200 p-1 rounded-lg"}
@@ -308,7 +328,9 @@ const CustomTable = ({
                 </div>
             </div>
             <div
-                className={"overflow-x-auto w-full h-full bg-base-100 rounded-lg shadow-lg p-4 border-neutral border-2 hover:shadow-xl relative"}
+                className={"overflow-x-auto w-full h-full bg-base-100 rounded-lg shadow-lg py-4 pr-4 border-neutral border-2 hover:shadow-xl relative"}
+                ref={dragRef}
+                {...events}
             >
                 <table
                     className={"table table-md table-zebra w-full absolute overflow-x-auto"}
@@ -340,7 +362,7 @@ const CustomTable = ({
                     </thead>
                     <tbody>
                     {
-                        data[selected].map((item: any, index: number) => {
+                        data[selected]?.map((item: any, index: number) => {
                             return (
                                 <tr
                                     key={index}
@@ -498,12 +520,26 @@ const CustomTable = ({
                                                                     value={column.value}
                                                                     name={column.name}
                                                                 /> :
+                                                            column.type === "textarea" ?
+                                                                <textarea
+                                                                    className={"textarea textarea-bordered"}
+                                                                    name={column.name}
+                                                                /> :
                                                                 column.type === "select" ?
                                                                     <select
                                                                         className={"select select-bordered"}
                                                                         name={column.name}
                                                                         multiple={column.multiple}
                                                                     >
+                                                                        {
+                                                                            !column.multiple ?
+                                                                                <option
+                                                                                    key={index}
+                                                                                    value={'none'}
+                                                                                >
+                                                                                    -- Bitte wählen --
+                                                                                </option> : null
+                                                                        }
                                                                         {
                                                                             column.options.map((option: any, index: number) => {
                                                                                 return (
@@ -527,11 +563,10 @@ const CustomTable = ({
                     <div
                         className={"flex flex-row justify-end w-full pt-2"}
                     >
-                        <button className={"btn btn-primary mr-2"}
-                                type={"submit"}
-                        >
-                            Speichern
-                        </button>
+                        <input className={"btn btn-primary mr-2"}
+                               type={"submit"}
+                               value={"Speichern"}
+                        />
                         <button className={"btn btn-neutral"} onClick={handleModalClose}
                                 type={"button"}
                         >

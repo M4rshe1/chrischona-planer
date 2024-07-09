@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {UserSession} from "@/lib/route";
+import {UserSession} from "@/lib/types";
 import {RelationRoleLocation} from "@prisma/client";
 import {usePathname} from "next/navigation";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
@@ -64,16 +64,18 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                         <li
                             className={"tooltip tooltip-right"}
                             data-tip="Menü ein-/ausblenden"
-                        ><div
-                            className={"font-semibold flex item-center justify-center " + (expanded ? "aspect-auto" : "aspect-square")}
-                            onClick={() => handleLayoutChange()}
                         >
-                            {
-                                expanded ?
-                                <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faCompress}/> :
-                                <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faExpand}/>
-                            }
-                        </div></li>
+                            <div
+                                className={"font-semibold flex item-center justify-center " + (expanded ? "aspect-auto" : "aspect-square")}
+                                onClick={() => handleLayoutChange()}
+                            >
+                                {
+                                    expanded ?
+                                        <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faCompress}/> :
+                                        <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faExpand}/>
+                                }
+                            </div>
+                        </li>
                         <li
                             className={"tooltip tooltip-right"}
                             data-tip="Dashboard des Standorts"
@@ -93,7 +95,7 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                             data-tip="Gottesdienste und Events verwalten"
                         ><Link
                             href={`/location/${locationId}/planer`}
-                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ")  + (current_path?.endsWith("/planer") ? "active" : "")}
+                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/planer") ? "active" : "")}
                         >
                             <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faCalendarAlt}/>
                             <div
@@ -102,6 +104,7 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                 Planer
                             </div>
                         </Link></li>
+
                         {
                             (["OWNER", "MANAGER"].includes(user_location_role as string) || session.user.role === "ADMIN") &&
                             <>
@@ -136,7 +139,21 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                 </Link></li>
                                 <li
                                     className={"tooltip tooltip-right"}
-                                    data-tip="Teammitglieder und Rollen des Standorts verwalten"
+                                    data-tip="Teams verwalten"
+                                ><Link
+                                    href={`/location/${locationId}/teams`}
+                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/teams") ? "active" : "")}
+                                >
+                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faUsersRectangle}/>
+                                    <div
+                                        className={"ml-2 " + (expanded ? "block" : "hidden")}
+                                    >
+                                        Teams
+                                    </div>
+                                </Link></li>
+                                <li
+                                    className={"tooltip tooltip-right"}
+                                    data-tip="Das Team des Standorts"
                                 ><Link
                                     href={`/location/${locationId}/team`}
                                     className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/team") ? "active" : "")}
@@ -148,22 +165,22 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                         Team
                                     </div>
                                 </Link></li>
-                                <li
-                                    className={"tooltip tooltip-right"}
-                                    data-tip="Änderungen im großen Stil"
-                                ><Link
-                                    href={`/location/${locationId}/bulk-actions`}
-                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/bulk-actions") ? "active" : "")}
-                                >
-                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faTools}/>
-                                    <div
-                                        className={"ml-2 " + (expanded ? "block" : "hidden")}
-                                    >
-                                        Bulk Actions
-                                    </div>
-                                </Link></li>
                             </>
                         }
+                        <li
+                            className={"tooltip tooltip-right"}
+                            data-tip="Änderungen im großen Stil"
+                        ><Link
+                            href={`/location/${locationId}/bulk-actions`}
+                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/bulk-actions") ? "active" : "")}
+                        >
+                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faTools}/>
+                            <div
+                                className={"ml-2 " + (expanded ? "block" : "hidden")}
+                            >
+                                Bulk Actions
+                            </div>
+                        </Link></li>
                     </ul>
                 </div>
             </aside>

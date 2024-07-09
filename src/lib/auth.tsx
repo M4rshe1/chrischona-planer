@@ -18,7 +18,7 @@ export const LogoutButton = ({className = ''}: { className: string }) => {
             className={'btn btn-neutral ' + className}
             onClick={() => {
                 signOut().then(() => {
-                    redirect('/')
+                    return redirect('/')
                 })
             }}>Abmelden
         </button>

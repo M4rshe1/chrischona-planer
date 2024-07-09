@@ -100,7 +100,14 @@ const page = async ({params}: { params: { locationId: string } }) => {
     async function handleSave(formData: FormData) {
         "use server"
         const prisma = new PrismaClient()
-        const validuntil = new Date(formData.get("validuntil") as string)
+        const dateFromForm = formData.get("validuntil") as string
+        let validuntil: null | Date
+        if (!dateFromForm) {
+            validuntil = new Date()
+            validuntil.setFullYear(validuntil.getFullYear() + 1)
+        } else {
+            validuntil = new Date(dateFromForm)
+        }
         if (!formData.get("id")) {
             try {
                 await prisma.access_code.create({
@@ -138,6 +145,23 @@ const page = async ({params}: { params: { locationId: string } }) => {
         return revalidatePath(`/location/${locationId}/access`)
     }
 
+    async function handleDelete(item: any) {
+        "use server"
+        const prisma = new PrismaClient()
+        try {
+            await prisma.access_code.delete({
+                where: {
+                    id: item.id
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
+        }
+        return revalidatePath(`/location/${locationId}/access`)
+    }
+
     accessCodes = accessCodes?.map((code) => {
         return {
             id: code.id,
@@ -167,6 +191,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                              addButton={user_location_role != RelationRoleLocation.VIEWER}
                              editButton={user_location_role != RelationRoleLocation.VIEWER}
                              deleteButton={user_location_role != RelationRoleLocation.VIEWER}
+                             handleDelete={handleDelete}
                              handleSave={handleSave}
                              selectMenu={false}
 

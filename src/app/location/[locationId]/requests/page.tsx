@@ -126,7 +126,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             message: anfrage.message,
             username: anfrage.user.name,
             email: anfrage.user.email,
-            relation: anfrage.relation
+            relation: [{value: anfrage.relation, id: anfrage.relation}]
         }
     })
 
@@ -190,15 +190,12 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
             >
                 {
-                    anfragen && anfragen.length > 0 ?
+
                         <CustomTable columns={columns} data={groupedAnfragen} dropdown={dropdown} tableName={'requests'}
-                                     addButton={true} editButton={false} deleteButton={false}
+                                     editButton={false} deleteButton={false}
                                      actions={actions} selectMenu={false}
 
-                        /> :
-                        <div>
-                            <p>Keine Anfragen</p>
-                        </div>
+                        />
                 }
             </main>
         </LocationLayout>

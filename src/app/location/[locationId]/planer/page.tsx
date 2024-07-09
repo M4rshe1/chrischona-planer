@@ -21,6 +21,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     let location = null;
     let gottestdienste = null;
     let users = null;
+    let teams = null;
     try {
         location = await prisma.location.findUnique({
             where: {
@@ -61,7 +62,11 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 name: true,
                 teams: {
                     select: {
-                        name: true
+                        team: {
+                            select: {
+                                name: true
+                            }
+                        }
                     }
                 },
                 abwesenheiten: {
@@ -72,6 +77,26 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 },
             }
         })
+
+
+        teams = await prisma.team.findMany({
+            where: {
+                locationId: locationId
+            },
+            select: {
+                name: true,
+                users: {
+                    select: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true
+                            }
+                        }
+                    }
+                }
+            },
+        })
     } catch (e) {
         console.error(e)
     } finally {
@@ -81,6 +106,13 @@ const page = async ({params}: { params: { locationId: string } }) => {
     if (!location) {
         return notFound()
     }
+
+    teams = teams?.map((team) => {
+        return {
+            ...team,
+            users: team.users.map((user) => user.user)
+        }
+    })
 
 
     const user_location_role = location.Users.find((user) => user.userId === session.user.id)?.relation ?? "VIEWER"
@@ -94,7 +126,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             technikTon: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_TON").map(user => {
                 return {value: user.user.name, id: user.user.id}
             }),
-            prediger: gottesdienst.Gottesdienst_User.filter(user => user.role === "PASTOR").map(user => {
+            prediger: gottesdienst.Gottesdienst_User.filter(user => user.role === "PREDIGER").map(user => {
                 return {value: user.user.name, id: user.user.id}
             }),
             moderator: gottesdienst.Gottesdienst_User.filter(user => user.role === "MODERATOR").map(user => {
@@ -127,7 +159,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
     }, {} as {
         [year: string]: any[]
     });
-
 
     const columns = [
         {
@@ -181,7 +212,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             disabled: false
         },
         {
-            name: "externerPastor",
+            name: "externerPrediger",
             label: "Externer Prediger",
             type: "text",
             toggle: true,
@@ -205,7 +236,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "prediger",
             label: "Prediger",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "PASTOR")),
+            options: teams?.find(team => team.name === "PREDIGER")?.users || [],
             multiple: false,
             keys: {
                 value: "name",
@@ -218,7 +249,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "moderator",
             label: "Moderator",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "MODERATOR")),
+            options: teams?.find(team => team.name === "MODERATOR")?.users || [],
             multiple: false,
             keys: {
                 value: "name",
@@ -231,7 +262,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "technikBild",
             label: "Technik Bild",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "TECHNIK_BILD")),
+            options: teams?.find(team => team.name === "TECHNIK_BILD")?.users || [],
             multiple: false,
             keys: {
                 value: "name",
@@ -244,7 +275,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "technikTon",
             label: "Technik Ton",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "TECHNIK_TON")),
+            options: teams?.find(team => team.name === "TECHNIK_TON")?.users || [],
             multiple: false,
             keys: {
                 value: "name",
@@ -257,7 +288,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "musik",
             label: "Musik",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "MUSIK")),
+            options: teams?.find(team => team.name === "MUSIK")?.users || [],
             multiple: true,
             keys: {
                 value: "name",
@@ -270,7 +301,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "kindertreff",
             label: "Kindertreff",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "KINDERTREFF")),
+            options: teams?.find(team => team.name === "KINDERTREFF")?.users || [],
             multiple: true,
             keys: {
                 value: "name",
@@ -283,7 +314,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "kinderhute",
             label: "Kinderhüte",
             type: "select",
-            options: users?.filter(user => user.teams.some(team => team.name === "KINDERHUTTE")),
+            options: teams?.find(team => team.name === "KINDERHUTTE")?.users || [],
             multiple: true,
             keys: {
                 value: "name",
@@ -303,152 +334,166 @@ const page = async ({params}: { params: { locationId: string } }) => {
     ]
     let dropdown: string[] = []
     if (groupedGottesdienste) {
-        dropdown = Object.keys(groupedGottesdienste).map((year) => year)
+        dropdown = Object.keys(groupedGottesdienste)
     }
 
     async function handleSave(formData: FormData) {
         "use server";
-        const prisma = new PrismaClient()
-        if (!formData.get("id")) {
-            const dateUntill = new Date(formData.get("dateFrom") as string)
-            dateUntill.setHours(dateUntill.getHours() + 3)
-            await prisma.gottesdienst.create({
-                data: {
-                    dateFrom: new Date(formData.get("dateFrom") as string),
-                    dateUntill: dateUntill.toISOString(),
-                    anlass: formData.get("anlass") as string,
-                    kommentar: formData.get("kommentar") as string,
-                    thema: formData.get("theme") as string,
-                    textstelle: formData.get("textstelle") as string,
-                    externerPastor: formData.get("externerPastor") as string,
-                    findetStatt: formData.get("findetStatt") === "on",
-                    abendmahl: formData.get("abendmahl") === "on",
-                    kontakt: formData.get("kontakt") as string,
-                    locationId: locationId,
-                    Gottesdienst_User: {
-                        create: [
-                            {
-                                userId: formData.get("technikBild") as string,
-                                role: "TECHNIK_BILD",
-                            },
-                            {
-                                userId: formData.get("technikTon") as string,
-                                role: "TECHNIK_TON"
-                            },
-                            {
-                                userId: formData.get("prediger") as string,
-                                role: "PASTOR"
-                            },
-                            {
-                                userId: formData.get("moderator") as string,
-                                role: "MODERATOR"
-                            },
-                            // @ts-ignore
-                            ...(formData.getAll("kindertreff") as string[]).map(user => ({
-                                userId: user,
-                                role: "KINDERTREFF"
-                            })),
-                            // @ts-ignore
-                            ...(formData.getAll("kinderhute") as string[]).map(user => ({
-                                userId: user,
-                                role: "KINDERHUTTE"
-                            })),
-                            // @ts-ignore
-                            ...(formData.getAll("musik") as string[]).map(user => ({
-                                userId: user,
-                                role: "MUSIK"
-                            }))
-                        ]
-                    }
-                }
-            })
-        } else {
-            // date from plus 3 hours and in iso string
-            const dateUntill = new Date(formData.get("dateFrom") as string)
-            dateUntill.setHours(dateUntill.getHours() + 3)
-            await prisma.gottesdienst.update({
-                where: {
-                    id: formData.get("id") as string
-                },
-                data: {
-                    dateFrom: new Date(formData.get("dateFrom") as string),
-                    dateUntill: dateUntill.toISOString(),
-                    anlass: formData.get("anlass") as string,
-                    kommentar: formData.get("kommentar") as string,
-                    thema: formData.get("theme") as string,
-                    textstelle: formData.get("textstelle") as string,
-                    externerPastor: formData.get("externerPastor") as string,
-                    findetStatt: formData.get("findetStatt") === "on",
-                    abendmahl: formData.get("abendmahl") === "on",
-                    kontakt: formData.get("kontakt") as string,
-                }
-            })
-            await prisma.gottesdienst_User.deleteMany({
-                where: {
-                    gottesdienstId: formData.get("id") as string
-                }
-            })
+        try {
+            const toCheck = [
+                {name: "TECHNIK_BILD", input: "technikBild"},
+                {name: "TECHNIK_TON", input: "technikTon"},
+                {name: "PREDIGER", input: "prediger"},
+                {name: "MODERATOR", input: "moderator"}
+            ]
+            const toCreate: any[] = []
 
-            await prisma.gottesdienst_User.createMany({
-                data: [
-                    {
-                        userId: formData.get("technikBild") as string,
-                        role: "TECHNIK_BILD",
-                        gottesdienstId: formData.get("id") as string
+
+            const dateFromForm = formData.get("dateFrom") as string
+            let dateFrom
+            let dateUntill
+            if (dateFromForm === "") {
+                dateFrom = new Date()
+                dateUntill = new Date()
+            } else {
+                dateFrom = new Date(dateFromForm)
+                dateUntill = new Date(dateFromForm)
+                dateUntill.setHours(dateUntill.getHours() + 3)
+            }
+
+
+            const prisma = new PrismaClient()
+            if (!formData.get("id")) {
+                toCheck.map(role => {
+                    if (formData.get(role.input) !== "none") {
+                        toCreate.push(({
+                            userId: formData.get(role.input) as string,
+                            role: role.name,
+                        }))
+                    }
+                })
+
+                await prisma.gottesdienst.create({
+                    data: {
+                        dateFrom: dateFrom,
+                        dateUntill: dateUntill,
+                        anlass: formData.get("anlass") as string,
+                        kommentar: formData.get("kommentar") as string,
+                        thema: formData.get("theme") as string,
+                        textstelle: formData.get("textstelle") as string,
+                        externerPrediger: formData.get("externerPrediger") as string,
+                        findetStatt: formData.get("findetStatt") === "on",
+                        abendmahl: formData.get("abendmahl") === "on",
+                        kontakt: formData.get("kontakt") as string,
+                        locationId: locationId,
+                        Gottesdienst_User: {
+                            create: [
+                                ...toCreate,
+                                // @ts-ignore
+                                ...(formData.getAll("kindertreff") as string[]).map(user => ({
+                                    userId: user,
+                                    role: "KINDERTREFF"
+                                })),
+                                // @ts-ignore
+                                ...(formData.getAll("kinderhute") as string[]).map(user => ({
+                                    userId: user,
+                                    role: "KINDERHUTTE"
+                                })),
+                                // @ts-ignore
+                                ...(formData.getAll("musik") as string[]).map(user => ({
+                                    userId: user,
+                                    role: "MUSIK"
+                                }))
+                            ]
+                        }
+                    }
+                })
+            } else {
+                toCheck.map(role => {
+                    if (formData.get(role.input) !== "none") {
+                        toCreate.push(({
+                            userId: formData.get(role.input) as string,
+                            role: role.name,
+                            gottesdienstId: formData.get("id") as string
+                        }))
+                    }
+                })
+                await prisma.gottesdienst.update({
+                    where: {
+                        id: formData.get("id") as string
                     },
-                    {
-                        userId: formData.get("technikTon") as string,
-                        role: "TECHNIK_TON",
+                    data: {
+                        dateFrom: dateFrom,
+                        dateUntill: dateUntill,
+                        anlass: formData.get("anlass") as string,
+                        kommentar: formData.get("kommentar") as string,
+                        thema: formData.get("theme") as string,
+                        textstelle: formData.get("textstelle") as string,
+                        externerPrediger: formData.get("externerPrediger") as string,
+                        findetStatt: formData.get("findetStatt") === "on",
+                        abendmahl: formData.get("abendmahl") === "on",
+                        kontakt: formData.get("kontakt") as string,
+                    }
+                })
+                await prisma.gottesdienst_User.deleteMany({
+                    where: {
                         gottesdienstId: formData.get("id") as string
-                    },
-                    {
-                        userId: formData.get("prediger") as string,
-                        role: "PASTOR",
-                        gottesdienstId: formData.get("id") as string
-                    },
-                    {
-                        userId: formData.get("moderator") as string,
-                        role: "MODERATOR",
-                        gottesdienstId: formData.get("id") as string
-                    },
-                    // @ts-ignore
-                    ...(formData.getAll("kindertreff") as string[]).map(user => ({
-                        userId: user,
-                        role: "KINDERTREFF",
-                        gottesdienstId: formData.get("id") as string
-                    })),
-                    // @ts-ignore
-                    ...(formData.getAll("kinderhute") as string[]).map(user => ({
-                        userId: user,
-                        role: "KINDERHUTTE",
-                        gottesdienstId: formData.get("id") as string
-                    })),
-                    // @ts-ignore
-                    ...(formData.getAll("musik") as string[]).map(user => ({
-                        userId: user,
-                        role: "MUSIK",
-                        gottesdienstId: formData.get("id") as string
-                    }))
-                ]
-            })
+                    }
+                })
+
+                await prisma.gottesdienst_User.createMany({
+                    data: [
+                        ...toCreate,
+                        // @ts-ignore
+                        ...(formData.getAll("kindertreff") as string[]).map(user => ({
+                            userId: user,
+                            role: "KINDERTREFF",
+                            gottesdienstId: formData.get("id") as string
+                        })),
+                        // @ts-ignore
+                        ...(formData.getAll("kinderhute") as string[]).map(user => ({
+                            userId: user,
+                            role: "KINDERHUTTE",
+                            gottesdienstId: formData.get("id") as string
+                        })),
+                        // @ts-ignore
+                        ...(formData.getAll("musik") as string[]).map(user => ({
+                            userId: user,
+                            role: "MUSIK",
+                            gottesdienstId: formData.get("id") as string
+                        }))
+                    ]
+                })
+            }
+            return revalidatePath(`/location/${locationId}/planer`)
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
         }
-        return revalidatePath(`/location/${locationId}/planer`)
     }
 
     async function handleDelete(item: any) {
         "use server";
         const prisma = new PrismaClient()
-        await prisma.gottesdienst_User.deleteMany({
-            where: {
-                gottesdienstId: item.id
-            }
-        })
+        try {
 
-        await prisma.gottesdienst.delete({
-            where: {
-                id: item.id
-            }
-        })
+            await prisma.gottesdienst_User.deleteMany({
+                where: {
+                    gottesdienstId: item.id
+                }
+            })
+
+            await prisma.gottesdienst.delete({
+                where: {
+                    id: item.id
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
+        }
         return revalidatePath(`/location/${locationId}/planer`)
     }
 

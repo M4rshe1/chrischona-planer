@@ -22,6 +22,8 @@
     "nock": "^13.5.4",
     "react": "^18",
     "react-dom": "^18",
+    "react-select": "^5.8.0",
+    "react-use-draggable-scroll": "^0.4.7",
     "theme-change": "^2.5.0"
   },
   "devDependencies": {
