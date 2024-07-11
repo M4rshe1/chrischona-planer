@@ -164,24 +164,13 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
         redirect(`/location/${locationId}/planer/${params.gottesdienstId}/print`)
     }
 
-    async function handlePreview() {
-        "use server"
-        redirect(`/location/${locationId}/planer/${params.gottesdienstId}/print?preview=true`)
-    }
-
     const headerActions = [
         {
             handler: handlePrint,
             tooltip: "Drucken",
             icon: fas.faPrint,
             style: "btn-neutral"
-        },
-        {
-            handler: handlePreview,
-            tooltip: "Vorschau",
-            icon: fas.faEye,
-            style: "btn-neutral"
-        },
+        }
     ]
 
 

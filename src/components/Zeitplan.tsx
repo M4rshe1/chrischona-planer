@@ -1,24 +1,25 @@
 "use client"
 
-import {useSearchParams} from "next/navigation";
 import {DataCell, HeaderCell} from "@/components/zeitplanCells";
 import React from "react";
 import Image from "next/image";
 
 
 const Zeitplan = ({gottesdienst, sections}: { gottesdienst: any, sections: any }) => {
-    const query = useSearchParams()
-    if (query.get("preview") !== "true") {
-        window.addEventListener("beforeprint", () => {
-            window.print()
-        })
-    }
-    console.log(gottesdienst.dateFrom)
-
     return (
         <div
             className={"p-4 flex flex-col justify-start items-center place-items-center h-full w-full fixed inset-0 bg-base-100 z-50"}
         >
+            <Image src="/logo.png" alt="Logo" width={100} height={100} className={"fixed top-5 left-5"}/>
+            <div
+                className={"fixed right-3 bottom-3 border-md border-neutral p-2 bg-base-100 text-base-content rounded-md z-[1000] print:hidden"}
+            >
+                <button
+                    onClick={() => window.print()}
+                    className={"btn btn-primary m-3"}
+                >Drucken
+                </button>
+            </div>
             <div className={"grid grid-cols-[1fr_2fr_1fr_2fr] w-full"}>
                 <HeaderCell
                     style={"text-center col-span-4 text-2xl py-6"}>Datum: {gottesdienst.dateFrom?.toLocaleString('de-DE', {
@@ -27,7 +28,6 @@ const Zeitplan = ({gottesdienst, sections}: { gottesdienst: any, sections: any }
                     month: 'long',
                     day: 'numeric'
                 })}
-                    <Image src="/logo.png" alt="Logo" width={100} height={100} className={"fixed top-5 left-5"}/>
                 </HeaderCell>
                 <HeaderCell>Predigt</HeaderCell>
                 <DataCell>{gottesdienst.externerPrediger ? gottesdienst.externerPrediger : gottesdienst.Gottesdienst_User.find((u: any) => u.role === "PREDIGER")?.user.name}</DataCell>
@@ -61,7 +61,29 @@ const Zeitplan = ({gottesdienst, sections}: { gottesdienst: any, sections: any }
                 <HeaderCell
                     style={"text-center"}
                 >Bild/Ton</HeaderCell>
-
+                <DataCell>
+                    zuvor
+                </DataCell>
+                <DataCell></DataCell>
+                <DataCell>
+                    Einrichten / Soundcheck / Lüften
+                </DataCell>
+                <DataCell></DataCell>
+                <DataCell></DataCell>
+                <DataCell>
+                    9:15
+                </DataCell>
+                <DataCell></DataCell>
+                <DataCell>Gebet</DataCell>
+                <DataCell></DataCell>
+                <DataCell></DataCell>
+                <DataCell>
+                    9:30
+                </DataCell>
+                <DataCell></DataCell>
+                <DataCell>Begrüssen / Radar laufen lassen</DataCell>
+                <DataCell></DataCell>
+                <DataCell></DataCell>
                 {
                     sections.map((section: any, index: number) => {
                         return (
