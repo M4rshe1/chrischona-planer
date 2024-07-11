@@ -158,8 +158,8 @@ model Zeitplan {
   id             String       @id @unique @default(cuid())
   gottesdienstId String
   gottesdienst   Gottesdienst @relation(fields: [gottesdienstId], references: [id])
-  timeFrom       DateTime
-  durationMin    Int
+  timeFrom       String?
+  durationMin    Int?
   was            String?
   wer            String?
   bild_ton       String?

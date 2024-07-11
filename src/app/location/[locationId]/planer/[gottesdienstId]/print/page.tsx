@@ -1,10 +1,13 @@
-import {notFound, redirect, useSearchParams} from "next/navigation";
+import {notFound, redirect} from "next/navigation";
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/lib/authOptions";
 import Zeitplan from "@/components/Zeitplan";
+import {PrismaClient} from "@prisma/client";
 
-const Page = async ({params}: {params: {locationId: string, gottesdienstId: string}}) => {
+const prisma = new PrismaClient()
+
+const Page = async ({params}: { params: { locationId: string, gottesdienstId: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
     if (session === null) {
         redirect("/auth/login")
@@ -36,6 +39,13 @@ const Page = async ({params}: {params: {locationId: string, gottesdienstId: stri
         gottesdienst = await prisma.gottesdienst.findUnique({
             where: {
                 id: params.gottesdienstId
+            },
+            include: {
+                Gottesdienst_User: {
+                    include: {
+                        user: true
+                    }
+                }
             }
         })
     } catch (e) {

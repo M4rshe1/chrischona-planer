@@ -202,6 +202,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
                                      handleDelete={handleDelete}
                                      handleSave={handleSave}
                                      headerActions={headerActions}
+                                     toggleButtomTextareaPre={true}
 
                         />
                     }

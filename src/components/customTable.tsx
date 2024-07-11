@@ -3,7 +3,6 @@
 import {useEffect, useMemo, useRef, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
-import {useDraggable} from "react-use-draggable-scroll";
 
 const CustomTable = ({
                          columns,
@@ -19,7 +18,8 @@ const CustomTable = ({
                          handleDelete,
                          exportButton,
                          fullscreenButton,
-                         headerActions
+                         headerActions,
+                         toggleButtomTextareaPre
                      }: {
     columns: any[],
     data: any,
@@ -34,14 +34,15 @@ const CustomTable = ({
     selectMenu: boolean,
     exportButton?: boolean,
     fullscreenButton?: boolean,
-    headerActions?: any
+    headerActions?: any,
+    toggleButtomTextareaPre?: boolean
 }) => {
     const formRef = useRef<HTMLDivElement>(null);
     const [selected, setSelected] = useState<string>(dropdown[(dropdown.length - 1)] || "keine");
     const [displayedColumns, setDisplayedColumns] = useState<any[]>(columns);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [tableFullscreen, setTableFullscreen] = useState<boolean>(false);
-
+    const [textareaPre, setTextareaPre] = useState<boolean>(toggleButtomTextareaPre || false);
 
     function fixDropdown(force: boolean = false) {
         if (dropdown.length === 0 || force) {
@@ -118,7 +119,7 @@ const CustomTable = ({
                         return row[column.name].map((value: any) => {
                             return value.value;
                         }).join(";");
-                    case "datetime":
+                    case "date":
                         // @ts-ignore
                         return new Date(row[column.name]).toLocaleDateString('de-CH', {
                             year: 'numeric',
@@ -227,7 +228,7 @@ const CustomTable = ({
 
     return (
         <div
-            className={"w-full h-full flex flex-col gap-4 " + (tableFullscreen ? "p-4 fixed inset-0 z-[1000] bg-base-100" : "relative")}
+            className={"w-full h-full flex flex-col gap-4 " + (tableFullscreen ? "p-4 fixed inset-0 z-[1000] bg-base-100" : "relative min-h-screen")}
         >
             <div
                 className={"flex flex-row justify-between items-center w-full"}
@@ -268,6 +269,21 @@ const CustomTable = ({
                                     tableFullscreen ?
                                         <FontAwesomeIcon icon={fas.faCompress}/>
                                         : <FontAwesomeIcon icon={fas.faExpand}/>
+                                }
+                            </div> : null
+                    }
+                    {
+                        toggleButtomTextareaPre ?
+                            <div
+                                role={"button"}
+                                className={"btn btn-neutral tooltip tooltip-right flex items-center justify-center aspect-square"}
+                                onClick={() => setTextareaPre(!textareaPre)}
+                                data-tip={"Textfelder umschalten"}
+                            >
+                                {
+                                    textareaPre ?
+                                        <FontAwesomeIcon icon={fas.faFileAlt}/>
+                                        : <FontAwesomeIcon icon={fas.faFileCode}/>
                                 }
                             </div> : null
                     }
@@ -446,13 +462,6 @@ const CustomTable = ({
                                                                     month: '2-digit',
                                                                     day: '2-digit'
                                                                 }) :
-                                                            column.type === "time" ?
-                                                                <input
-                                                                    type="time"
-                                                                    defaultValue={item[column.name]}
-                                                                    disabled={false}
-                                                                    className={"checkbox checkbox-primary checkbox-sm pointer-events-none"}
-                                                                /> :
                                                             column.type === "link" ?
                                                                 <a
                                                                     href={item[column.name]}
@@ -461,7 +470,7 @@ const CustomTable = ({
                                                                     rel={"noreferrer"}
                                                                 >
                                                                     {item[column.name]}
-                                                                </a>:
+                                                                </a> :
                                                                 column.type === "boolean" ?
                                                                     <input
                                                                         type="checkbox"
@@ -469,6 +478,8 @@ const CustomTable = ({
                                                                         disabled={false}
                                                                         className={"checkbox checkbox-primary checkbox-sm pointer-events-none"}
                                                                     /> :
+                                                                (column.type === "textarea" && textareaPre) ?
+                                                                    <pre>{item[column.name]}</pre> :
                                                                     column.type === "select" ?
                                                                         Object.keys(item[column.name]).map((key: any, index: number) => {
                                                                             return (
@@ -548,58 +559,58 @@ const CustomTable = ({
                                                                 className={"input input-bordered"}
                                                                 name={column.name}
                                                             /> :
-                                                        column.type === "time" ?
-                                                            <input
-                                                                type="time"
-                                                                className={"input input-bordered"}
-                                                                name={column.name}
-                                                            /> :
-                                                            column.type === "boolean" ?
+                                                            column.type === "time" ?
                                                                 <input
-                                                                    type="checkbox"
-                                                                    className={"checkbox checkbox-primary"}
+                                                                    type="time"
+                                                                    className={"input input-bordered"}
                                                                     name={column.name}
                                                                 /> :
-                                                                column.type === "hidden" ?
+                                                                column.type === "boolean" ?
                                                                     <input
-                                                                        type="hidden"
-                                                                        className={"hidden"}
-                                                                        value={column.value}
+                                                                        type="checkbox"
+                                                                        className={"checkbox checkbox-primary"}
                                                                         name={column.name}
                                                                     /> :
-                                                                    column.type === "textarea" ?
-                                                                        <textarea
-                                                                            className={"textarea textarea-bordered"}
+                                                                    column.type === "hidden" ?
+                                                                        <input
+                                                                            type="hidden"
+                                                                            className={"hidden"}
+                                                                            value={column.value}
                                                                             name={column.name}
                                                                         /> :
-                                                                        column.type === "select" ?
-                                                                            <select
-                                                                                className={"select select-bordered"}
+                                                                        column.type === "textarea" ?
+                                                                            <textarea
+                                                                                className={"textarea textarea-bordered"}
                                                                                 name={column.name}
-                                                                                multiple={column.multiple}
-                                                                            >
-                                                                                {
-                                                                                    !column.multiple ?
-                                                                                        <option
-                                                                                            key={index}
-                                                                                            value={'none'}
-                                                                                        >
-                                                                                            -- Bitte wählen --
-                                                                                        </option> : null
-                                                                                }
-                                                                                {
-                                                                                    column.options.map((option: any, index: number) => {
-                                                                                        return (
+                                                                            /> :
+                                                                            column.type === "select" ?
+                                                                                <select
+                                                                                    className={"select select-bordered"}
+                                                                                    name={column.name}
+                                                                                    multiple={column.multiple}
+                                                                                >
+                                                                                    {
+                                                                                        !column.multiple ?
                                                                                             <option
                                                                                                 key={index}
-                                                                                                value={option[column.keys.id]}
+                                                                                                value={'none'}
                                                                                             >
-                                                                                                {option[column.keys.value]}
-                                                                                            </option>
-                                                                                        )
-                                                                                    })
-                                                                                }
-                                                                            </select> : null
+                                                                                                -- Bitte wählen --
+                                                                                            </option> : null
+                                                                                    }
+                                                                                    {
+                                                                                        column.options.map((option: any, index: number) => {
+                                                                                            return (
+                                                                                                <option
+                                                                                                    key={index}
+                                                                                                    value={option[column.keys.id]}
+                                                                                                >
+                                                                                                    {option[column.keys.value]}
+                                                                                                </option>
+                                                                                            )
+                                                                                        })
+                                                                                    }
+                                                                                </select> : null
                                         }
                                     </div>
                                 )

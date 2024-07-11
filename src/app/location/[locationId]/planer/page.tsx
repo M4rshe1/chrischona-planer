@@ -145,18 +145,18 @@ const page = async ({params}: { params: { locationId: string } }) => {
         },
         {
             name: "dateFrom",
-            label: "Datum von",
+            label: "Datum",
             type: "date",
             toggle: true,
             disabled: false
         },
-        {
-            name: "dateUntill",
-            label: "Datum bis",
-            type: "date",
-            toggle: false,
-            disabled: false
-        },
+        // {
+        //     name: "dateUntill",
+        //     label: "Datum bis",
+        //     type: "date",
+        //     toggle: false,
+        //     disabled: false
+        // },
         {
             name: "anlass",
             label: "Anlass",
@@ -340,7 +340,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 {name: "TECHNIK_TON", input: "technikTon"},
                 {name: "PREDIGER", input: "prediger"},
                 {name: "MODERATOR", input: "moderator"},
-                {name: "BEGRUSSUNG", input: "negrussung"}
+                {name: "BEGRUSSUNG", input: "begrussung"}
             ]
             const toCreate: any[] = []
 
