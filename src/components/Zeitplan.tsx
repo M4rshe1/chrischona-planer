@@ -12,11 +12,16 @@ const Zeitplan = ({gottesdienst, sections}: { gottesdienst: any, sections: any }
         >
             <Image src="/logo.png" alt="Logo" width={100} height={100} className={"fixed top-5 left-5"}/>
             <div
-                className={"fixed right-3 bottom-3 border-md border-neutral p-2 bg-base-100 text-base-content rounded-md z-[1000] print:hidden"}
+                className={"fixed right-3 bottom-3 border-md border-neutral p-2 text-base-content rounded-md z-[1000] print:hidden bg-base-200 shadow-lg"}
             >
                 <button
+                    onClick={() => window.history.back()}
+                    className={"btn btn-neutral m-2"}
+                >Zurück
+                </button>
+                <button
                     onClick={() => window.print()}
-                    className={"btn btn-primary m-3"}
+                    className={"btn btn-primary m-2"}
                 >Drucken
                 </button>
             </div>
