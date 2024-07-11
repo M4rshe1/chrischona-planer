@@ -6,6 +6,9 @@ import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation} from "@prisma/client";
 import CustomTable from "@/components/customTable";
 import {revalidatePath} from "next/cache";
+import Loading from "@/app/loading";
+import {Suspense} from "react";
+import {fas} from "@fortawesome/free-solid-svg-icons";
 
 
 const prisma = new PrismaClient()
@@ -20,7 +23,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
     const locationId = params.locationId;
     let location = null;
     let gottestdienste = null;
-    let users = null;
     let teams = null;
     try {
         location = await prisma.location.findUnique({
@@ -48,36 +50,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 dateFrom: "asc"
             }
         })
-
-        users = await prisma.user.findMany({
-            where: {
-                locations: {
-                    some: {
-                        locationId: locationId
-                    }
-                }
-            },
-            select: {
-                id: true,
-                name: true,
-                teams: {
-                    select: {
-                        team: {
-                            select: {
-                                name: true
-                            }
-                        }
-                    }
-                },
-                abwesenheiten: {
-                    select: {
-                        dateFrom: true,
-                        dateTo: true
-                    }
-                },
-            }
-        })
-
 
         teams = await prisma.team.findMany({
             where: {
@@ -140,6 +112,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
             }),
             musik: gottesdienst.Gottesdienst_User.filter(user => user.role === "MUSIK").map(user => {
                 return {value: user.user.name, id: user.user.id}
+            }),
+            begrussung: gottesdienst.Gottesdienst_User.filter(user => user.role === "BEGRUSSUNG").map(user => {
+                return {value: user.user.name, id: user.user.id}
             })
         }
     })
@@ -171,14 +146,14 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "dateFrom",
             label: "Datum von",
-            type: "datetime",
+            type: "date",
             toggle: true,
             disabled: false
         },
         {
             name: "dateUntill",
             label: "Datum bis",
-            type: "datetime",
+            type: "date",
             toggle: false,
             disabled: false
         },
@@ -298,6 +273,19 @@ const page = async ({params}: { params: { locationId: string } }) => {
             disabled: false
         },
         {
+            name: "begrussung",
+            label: "Begrüssung",
+            type: "select",
+            options: teams?.find(team => team.name === "BEGRUSSUNG")?.users || [],
+            multiple: false,
+            keys: {
+                value: "name",
+                id: "id"
+            },
+            toggle: true,
+            disabled: false
+        },
+        {
             name: "kindertreff",
             label: "Kindertreff",
             type: "select",
@@ -331,6 +319,13 @@ const page = async ({params}: { params: { locationId: string } }) => {
             toggle: true,
             disabled: false
         },
+        {
+            name: "youtubeLink",
+            label: "Stream Link",
+            type: "link",
+            toggle: true,
+            disabled: false
+        },
     ]
     let dropdown: string[] = []
     if (groupedGottesdienste) {
@@ -344,7 +339,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 {name: "TECHNIK_BILD", input: "technikBild"},
                 {name: "TECHNIK_TON", input: "technikTon"},
                 {name: "PREDIGER", input: "prediger"},
-                {name: "MODERATOR", input: "moderator"}
+                {name: "MODERATOR", input: "moderator"},
+                {name: "BEGRUSSUNG", input: "negrussung"}
             ]
             const toCreate: any[] = []
 
@@ -385,6 +381,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         findetStatt: formData.get("findetStatt") === "on",
                         abendmahl: formData.get("abendmahl") === "on",
                         kontakt: formData.get("kontakt") as string,
+                        youtubeLink: formData.get("youtubeLink") as string,
                         locationId: locationId,
                         Gottesdienst_User: {
                             create: [
@@ -433,6 +430,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         findetStatt: formData.get("findetStatt") === "on",
                         abendmahl: formData.get("abendmahl") === "on",
                         kontakt: formData.get("kontakt") as string,
+                        youtubeLink: formData.get("youtubeLink") as string,
                     }
                 })
                 await prisma.gottesdienst_User.deleteMany({
@@ -473,6 +471,21 @@ const page = async ({params}: { params: { locationId: string } }) => {
         }
     }
 
+    async function handleOpenZeitplaner(item: any) {
+        "use server"
+        redirect(`/location/${locationId}/planer/${item.id}`)
+    }
+
+    const actions = [
+        {
+            handler: handleOpenZeitplaner,
+            tooltip: "Zeitplaner öffnen",
+            icon: fas.faRectangleList,
+            style: "btn-neutral"
+        }
+    ]
+
+
     async function handleDelete(item: any) {
         "use server";
         const prisma = new PrismaClient()
@@ -500,19 +513,23 @@ const page = async ({params}: { params: { locationId: string } }) => {
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
+            <Suspense fallback={<Loading/>}>
             <main
                 className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
             >
                 <CustomTable columns={columns} data={groupedGottesdienste} dropdown={dropdown} tableName={'planer'}
-                             addButton={user_location_role != RelationRoleLocation.VIEWER} handleSave={handleSave}
+                             addButton={user_location_role != RelationRoleLocation.VIEWER}
                              editButton={user_location_role != RelationRoleLocation.VIEWER}
                              deleteButton={user_location_role != RelationRoleLocation.VIEWER}
+                             handleSave={handleSave}
                              handleDelete={handleDelete}
                              selectMenu={true}
                              exportButton={true}
                              fullscreenButton={true}
+                             actions={actions}
                 />
             </main>
+            </Suspense>
         </LocationLayout>
     )
 }

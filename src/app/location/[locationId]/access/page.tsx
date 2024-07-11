@@ -6,6 +6,8 @@ import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import CustomTable from "@/components/customTable";
+import Loading from "@/app/loading";
+import {Suspense} from "react";
 
 
 const prisma = new PrismaClient()
@@ -59,7 +61,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "validuntil",
             label: "Gültig bis",
-            type: "datetime",
+            type: "date",
             toggle: true,
             disabled: false
         },
@@ -91,7 +93,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "link",
             label: "Link",
-            type: "hidden",
+            type: "link",
             toggle: true,
             disabled: true
         },
@@ -183,6 +185,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
+            <Suspense fallback={<Loading/>}>
             <main
                 className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
             >
@@ -197,6 +200,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
                 />
             </main>
+            </Suspense>
         </LocationLayout>
     )
 }

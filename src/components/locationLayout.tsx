@@ -104,7 +104,34 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                 Planer
                             </div>
                         </Link></li>
-
+                        <li
+                            className={"tooltip tooltip-right"}
+                            data-tip="Teams verwalten"
+                        ><Link
+                            href={`/location/${locationId}/teams`}
+                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/teams") ? "active" : "")}
+                        >
+                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faUsersRectangle}/>
+                            <div
+                                className={"ml-2 " + (expanded ? "block" : "hidden")}
+                            >
+                                Teams
+                            </div>
+                        </Link></li>
+                        <li
+                            className={"tooltip tooltip-right"}
+                            data-tip="Das Team des Standorts"
+                        ><Link
+                            href={`/location/${locationId}/team`}
+                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/team") ? "active" : "")}
+                        >
+                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faUsers}/>
+                            <div
+                                className={"ml-2 " + (expanded ? "block" : "hidden")}
+                            >
+                                Team
+                            </div>
+                        </Link></li>
                         {
                             (["OWNER", "MANAGER"].includes(user_location_role as string) || session.user.role === "ADMIN") &&
                             <>
@@ -139,48 +166,20 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                 </Link></li>
                                 <li
                                     className={"tooltip tooltip-right"}
-                                    data-tip="Teams verwalten"
+                                    data-tip="Änderungen im großen Stil"
                                 ><Link
-                                    href={`/location/${locationId}/teams`}
-                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/teams") ? "active" : "")}
+                                    href={`/location/${locationId}/bulk-actions`}
+                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/bulk-actions") ? "active" : "")}
                                 >
-                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faUsersRectangle}/>
+                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faTools}/>
                                     <div
                                         className={"ml-2 " + (expanded ? "block" : "hidden")}
                                     >
-                                        Teams
-                                    </div>
-                                </Link></li>
-                                <li
-                                    className={"tooltip tooltip-right"}
-                                    data-tip="Das Team des Standorts"
-                                ><Link
-                                    href={`/location/${locationId}/team`}
-                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/team") ? "active" : "")}
-                                >
-                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faUsers}/>
-                                    <div
-                                        className={"ml-2 " + (expanded ? "block" : "hidden")}
-                                    >
-                                        Team
+                                        Bulk Actions
                                     </div>
                                 </Link></li>
                             </>
                         }
-                        <li
-                            className={"tooltip tooltip-right"}
-                            data-tip="Änderungen im großen Stil"
-                        ><Link
-                            href={`/location/${locationId}/bulk-actions`}
-                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/bulk-actions") ? "active" : "")}
-                        >
-                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faTools}/>
-                            <div
-                                className={"ml-2 " + (expanded ? "block" : "hidden")}
-                            >
-                                Bulk Actions
-                            </div>
-                        </Link></li>
                     </ul>
                 </div>
             </aside>

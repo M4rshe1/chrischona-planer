@@ -40,14 +40,14 @@ const page = async () => {
         {
             name: "dateFrom",
             label: "Datum Ab",
-            type: "datetime",
+            type: "date",
             toggle: true,
             disabled: false
         },
         {
             name: "dateTo",
             label: "Datum Bis",
-            type: "datetime",
+            type: "date",
             toggle: true,
             disabled: false,
         },

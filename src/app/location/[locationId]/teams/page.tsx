@@ -6,6 +6,8 @@ import {notFound, redirect} from "next/navigation";
 import {PrismaClient} from "@prisma/client";
 import TeamForm from "@/components/teamForm";
 import {revalidatePath} from "next/cache";
+import {Suspense} from "react";
+import Loading from "@/app/loading";
 
 
 const prisma = new PrismaClient()
@@ -131,19 +133,26 @@ const page = async ({params}: { params: { locationId: string } }) => {
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
-            <main
-                className={"p-4 grid justify-start items-center h-full gap-4 w-full grid-flow-row lg:grid-cols-3 md:grid-cols-2 grid-cols-1"}
-            >
-                {
-                    Teams ?
-                        Teams.map((team, index) => {
-                            return (
-                                <TeamForm team={team} handleAdd={handleAdd} handleDelete={handleDelete} users={users}
-                                          key={index}/>
-                            )
-                        }) : null
-                }
-            </main>
+            <Suspense fallback={<Loading/>}>
+
+                <main
+                    className={"p-4 grid justify-start items-center h-full gap-4 w-full grid-flow-row lg:grid-cols-3 md:grid-cols-2 grid-cols-1"}
+                >
+                    {
+                        Teams ?
+                            Teams.map((team, index) => {
+                                return (
+                                    <TeamForm team={team} handleAdd={handleAdd} handleDelete={handleDelete}
+                                              users={users}
+                                              key={index}
+                                              showForm={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'}
+                                              showDelete={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'}
+                                    />
+                                )
+                            }) : null
+                    }
+                </main>
+            </Suspense>
         </LocationLayout>
     )
 }

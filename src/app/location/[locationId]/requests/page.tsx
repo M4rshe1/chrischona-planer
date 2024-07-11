@@ -7,6 +7,8 @@ import {PrismaClient, RelationRoleLocation, Status} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import CustomTable from "@/components/customTable";
+import Loading from "@/app/loading";
+import {Suspense} from "react";
 
 
 const prisma = new PrismaClient()
@@ -16,7 +18,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
     if (session === null) {
         redirect("/auth/login")
     }
-
 
     const locationId = params.locationId;
     let location = null;
@@ -102,14 +103,15 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "relation",
             label: "Relation",
             type: "select",
+            multiple: false,
             options: Object.values(RelationRoleLocation).map((value) => {
                 return {
-                    name: value,
+                    value: value,
                     id: value
                 }
             }),
             keys: {
-                value: "name",
+                value: "value",
                 id: "id"
             },
             toggle: true,
@@ -129,6 +131,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             relation: [{value: anfrage.relation, id: anfrage.relation}]
         }
     })
+
 
     const groupedAnfragen = {
         alle: anfragen
@@ -186,18 +189,17 @@ const page = async ({params}: { params: { locationId: string } }) => {
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
-            <main
-                className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
-            >
-                {
+            <Suspense fallback={<Loading/>}>
+                <main
+                    className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
+                >
+                    <CustomTable columns={columns} data={groupedAnfragen} dropdown={dropdown} tableName={'requests'}
+                                 editButton={false} deleteButton={false}
+                                 actions={actions} selectMenu={false}
 
-                        <CustomTable columns={columns} data={groupedAnfragen} dropdown={dropdown} tableName={'requests'}
-                                     editButton={false} deleteButton={false}
-                                     actions={actions} selectMenu={false}
-
-                        />
-                }
-            </main>
+                    />
+                </main>
+            </Suspense>
         </LocationLayout>
     )
 }

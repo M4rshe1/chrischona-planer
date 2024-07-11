@@ -6,6 +6,8 @@ import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation} from "@prisma/client";
 import CustomTable from "@/components/customTable";
 import {revalidatePath} from "next/cache";
+import Loading from "@/app/loading";
+import { Suspense } from "react";
 
 
 const prisma = new PrismaClient()
@@ -52,6 +54,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         id: true
                     }
                 }
+            },
+            orderBy: {
+                name: 'asc'
             }
         })
     } catch (e) {
@@ -77,14 +82,14 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "name",
             label: "Name",
-            type: "text",
+            type: "hidden",
             toggle: true,
             disabled: true
         },
         {
             name: "email",
             label: "Email",
-            type: "text",
+            type: "hidden",
             toggle: true,
             disabled: true
         },
@@ -165,13 +170,14 @@ const page = async ({params}: { params: { locationId: string } }) => {
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
+            <Suspense fallback={<Loading/>}>
             <main
                 className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
             >
                 {
 
                     <CustomTable columns={columns} data={groupedUsers} dropdown={dropdown} tableName={'team'}
-                                 editButton={true} deleteButton={true}
+                                 editButton={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'} deleteButton={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'}
                                  selectMenu={false}
                                  handleDelete={handleDelete}
                                  handleSave={handleSave}
@@ -179,6 +185,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                     />
                 }
             </main>
+            </Suspense>
         </LocationLayout>
     )
 }

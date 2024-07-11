@@ -69,9 +69,14 @@ const Header = async () => {
                         <div className="dropdown dropdown-end mx-2">
                             <div tabIndex={0} role="button" className="btn btn-circle ring ring-neutral">
                                 {
-                                    <div className="rounded-full grid place-items-center">
+                                    <div className="rounded-full flex items-center justify-center">
                                         {
-                                            session.user.name[0]
+                                            session.user.name.split(' ').map((name: string, index: number) => {
+                                                return (
+                                                    <span key={index}
+                                                          className={"text-lg font-bold"}>{name.charAt(0)}</span>
+                                                )
+                                            })
                                         }
                                     </div>
                                 }

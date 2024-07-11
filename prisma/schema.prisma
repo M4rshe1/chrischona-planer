@@ -31,6 +31,7 @@ enum RelationRoleGottesdienst {
   TEENETALK
   BISTRO
   PUTZTEAM
+  BEGRUSSUNG
   TEAM
 }
 
@@ -90,6 +91,8 @@ model Gottesdienst {
   kontakt           String?
   Gottesdienst_User Gottesdienst_User[]
   findetStatt       Boolean             @default(true)
+  Zeitplan          Zeitplan[]
+  youtubeLink       String?
 }
 
 model Gottesdienst_User {
@@ -149,4 +152,15 @@ model team_user {
   teamId String
   user   User   @relation(fields: [userId], references: [id])
   team   team   @relation(fields: [teamId], references: [id])
+}
+
+model Zeitplan {
+  id             String       @id @unique @default(cuid())
+  gottesdienstId String
+  gottesdienst   Gottesdienst @relation(fields: [gottesdienstId], references: [id])
+  timeFrom       DateTime
+  durationMin    Int
+  was            String?
+  wer            String?
+  bild_ton       String?
 }

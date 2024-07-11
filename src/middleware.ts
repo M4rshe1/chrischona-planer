@@ -28,24 +28,23 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/', request.url));
         }
 
-        if (url.pathname === '/location') {
-            return NextResponse.redirect(new URL('/', request.url));
-        }
+        const locationId = extractLocationIdFromPath(url.pathname);
 
-        const managerRoutes = [ '/location/[locationId]/access', '/location/[locationId]/requests' ];
+        const managerRoutes = [ `/location/${locationId}/access`, `/location/${locationId}/requests`, `/location/${locationId}/bulk-actions`];
 
         if (url.pathname.startsWith('/location') && token?.role !== 'ADMIN') {
-            const locationId = extractLocationIdFromPath(url.pathname);
             // @ts-ignore
             if (!locationId || !(token?.locations.map((location) => location.id).includes(locationId))) {
                 return NextResponse.redirect(new URL('/access/request/' + locationId, request.url));
             }
 
-            // @ts-ignore
-            if (url.pathname.startsWith('/location/[locationId]/access') && token?.locations.find((location) => location.id === locationId)?.relation !== 'MANAGER') {
-                return NextResponse.redirect(new URL('/location/' + locationId, request.url));
-            }
 
+            managerRoutes.forEach((route) => {
+                // @ts-ignore
+                if (url.pathname.startsWith(route) && !['MANAGER', 'OWNER'].includes(token?.locations.find((location) => location.id === locationId)?.relation)) {
+                    return NextResponse.redirect(new URL('/location/' + locationId, request.url));
+                }
+            })
 
         }
 

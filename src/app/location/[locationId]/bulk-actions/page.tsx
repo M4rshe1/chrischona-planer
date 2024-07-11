@@ -4,6 +4,8 @@ import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
 import {PrismaClient} from "@prisma/client";
+import Loading from "@/app/loading";
+import {Suspense} from "react";
 
 
 const page = async ({params}: { params: { locationId: string } }) => {
@@ -41,9 +43,11 @@ const page = async ({params}: { params: { locationId: string } }) => {
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
+            <Suspense fallback={<Loading/>}>
             <div>
                 <h1>Bulk Actions Page</h1>
             </div>
+            </Suspense>
         </LocationLayout>
     )
 }
