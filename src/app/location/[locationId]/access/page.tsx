@@ -8,6 +8,7 @@ import {revalidatePath} from "next/cache";
 import CustomTable from "@/components/customTable";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
+import EditableTable from "@/components/editableTable";
 
 
 const prisma = new PrismaClient()
@@ -77,7 +78,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "used",
             label: "Verwendungen",
-            type: "hidden",
+            type: "number",
             toggle: true,
             disabled: true,
             min: 0,
@@ -86,7 +87,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "approvalNeeded",
             label: "Freigabe benötigt",
-            type: "boolean",
+            type: "checkbox",
             toggle: true,
             disabled: false
         },
@@ -99,51 +100,24 @@ const page = async ({params}: { params: { locationId: string } }) => {
         },
     ]
 
-    async function handleSave(formData: FormData) {
+    async function handleSave(value: any, row: any, name: string) {
         "use server"
         const prisma = new PrismaClient()
-        const dateFromForm = formData.get("validuntil") as string
-        let validuntil: null | Date
-        if (!dateFromForm) {
-            validuntil = new Date()
-            validuntil.setFullYear(validuntil.getFullYear() + 1)
-        } else {
-            validuntil = new Date(dateFromForm)
+        try {
+            await prisma.access_code.update({
+                where: {
+                    id: row.id
+                },
+                data: {
+                    [name]: value
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
         }
-        if (!formData.get("id")) {
-            try {
-                await prisma.access_code.create({
-                    data: {
-                        locationId: locationId,
-                        validuntil: validuntil.toISOString(),
-                        maxuses: parseInt(formData.get("maxuses") as string),
-                        used: 0,
-                        approvalNeeded: formData.get("approvalNeeded") === "on",
-                    }
-                })
-            } catch (e) {
-                console.error(e)
-            } finally {
-                await prisma.$disconnect()
-            }
-        } else {
-            try {
-                await prisma.access_code.update({
-                    where: {
-                        id: formData.get("id") as string
-                    },
-                    data: {
-                        validuntil: validuntil.toISOString(),
-                        maxuses: parseInt(formData.get("maxuses") as string),
-                        approvalNeeded: formData.get("approvalNeeded") === "on",
-                    }
-                })
-            } catch (e) {
-                console.error(e)
-            } finally {
-                await prisma.$disconnect()
-            }
-        }
+
         return revalidatePath(`/location/${locationId}/access`)
     }
 
@@ -154,6 +128,29 @@ const page = async ({params}: { params: { locationId: string } }) => {
             await prisma.access_code.delete({
                 where: {
                     id: item.id
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
+        }
+        return revalidatePath(`/location/${locationId}/access`)
+    }
+
+    async function handleCreate() {
+        "use server"
+        const prisma = new PrismaClient()
+        try {
+            const validuntil = new Date()
+            validuntil.setDate(validuntil.getDate() + 7)
+            await prisma.access_code.create({
+                data: {
+                    locationId: locationId,
+                    validuntil: validuntil,
+                    maxuses: 1,
+                    used: 0,
+                    approvalNeeded: false
                 }
             })
         } catch (e) {
@@ -176,11 +173,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
         }
     })
 
-    const groupedCodes = {
-        alle: accessCodes
-    }
-    const dropdown = Object.keys(groupedCodes)
-
 
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
@@ -190,15 +182,20 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
             >
 
-                <CustomTable columns={columns} data={groupedCodes} dropdown={dropdown} tableName={'access_codes'}
-                             addButton={user_location_role != RelationRoleLocation.VIEWER}
-                             editButton={user_location_role != RelationRoleLocation.VIEWER}
-                             deleteButton={user_location_role != RelationRoleLocation.VIEWER}
-                             handleDelete={handleDelete}
-                             handleSave={handleSave}
-                             selectMenu={false}
-
+                <EditableTable data={accessCodes}
+                               saveHandler={handleSave}
+                               createHandler={handleCreate}
+                               deleteHandler={handleDelete}
+                               columns={columns}
+                               allowEdit={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
+                               allowCreate={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
+                               allowDelete={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
+                               allowFullscreen={true}
+                               allowExport={false}
+                               tableName={"Zugangscodes"}
                 />
+
+
             </main>
             </Suspense>
         </LocationLayout>

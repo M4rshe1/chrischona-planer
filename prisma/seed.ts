@@ -95,6 +95,14 @@ async function main() {
         },
     ];
 
+    for (const user of users) {
+        const created = await prisma.user.upsert({
+            where: {email: user.email},
+            update: {},
+            create: user
+        });
+        console.log('Created user:', created);
+    }
 
     for (const location of locations) {
         const created = await prisma.location.upsert({
@@ -106,8 +114,9 @@ async function main() {
     }
     const dbLocations = await prisma.location.findMany();
 
+
     for (const location of dbLocations) {
-        for (const teamName of ['TECHNIK_BILD', 'TECHNIK_TON', 'TECHNIK_STREAM', 'PREDIGER', 'MODERATOR', 'MUSIK', 'KINDERHUTTE', 'KINDERTREFF', 'TEENETALK', 'BISTRO', 'PUTZTEAM', 'TEAM']) {
+        for (const teamName of ['TECHNIK_BILD', 'TECHNIK_TON', 'TECHNIK_STREAM', 'PREDIGER', 'MODERATOR', 'MUSIK', 'KINDERHUTE', 'KINDERTREFF', 'TEENETALK', 'BISTRO', 'PUTZTEAM', 'TEAM']) {
             const created = await prisma.team.upsert({
                 where: {
                     name_locationId: teamName + '_' + location.id
@@ -123,14 +132,6 @@ async function main() {
         }
     }
 
-    for (const user of users) {
-        const created = await prisma.user.upsert({
-            where: {email: user.email},
-            update: {},
-            create: user
-        });
-        console.log('Created user:', created);
-    }
 }
 
 main()

@@ -19,3 +19,28 @@ export type UserSession = {
         }[]
     }
 }
+
+export type EditableTableColumn = {
+    name: string,
+    label: string,
+    type: "hidden" | "time" | "number" | "text" | "select" | "email" | "date" | "textarea" | "checkbox" | "multiSelect" | "link",
+    toggle: boolean,
+    disabled: boolean
+    min?: number,
+    max?: number,
+    options?: { value: string, label: string }[],
+}
+
+export type EditableTableRowAction = {
+    tooltip: string,
+    handler: (row: any) => void,
+    icon: any,
+    style: string
+}
+
+export type EditableTableHeaderAction = {
+    tooltip: string,
+    handler: () => void,
+    icon: any,
+    style: string
+}

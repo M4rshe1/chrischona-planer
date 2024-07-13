@@ -16,6 +16,7 @@
     "@prisma/client": "^5.16.2",
     "aws-sdk": "^2.1654.0",
     "bcrypt": "^5.1.1",
+    "lucide-react": "^0.408.0",
     "mock-aws-s3": "^4.0.2",
     "next": "14.2.4",
     "next-auth": "^4.24.7",
@@ -24,6 +25,7 @@
     "react-dom": "^18",
     "react-select": "^5.8.0",
     "react-use-draggable-scroll": "^0.4.7",
+    "recharts": "^2.12.7",
     "sharp": "^0.33.4",
     "theme-change": "^2.5.0"
   },

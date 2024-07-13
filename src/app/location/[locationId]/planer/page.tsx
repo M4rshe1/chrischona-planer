@@ -1,14 +1,14 @@
 import LocationLayout from "@/components/locationLayout";
 import {authOptions} from '@/lib/authOptions';
-import {UserSession} from "@/lib/types";
+import {EditableTableColumn, UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, RelationRoleLocation} from "@prisma/client";
-import CustomTable from "@/components/customTable";
+import {PrismaClient, RelationRoleGottesdienst, RelationRoleLocation} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
 import {fas} from "@fortawesome/free-solid-svg-icons";
+import EditableTable from "@/components/editableTable";
 
 
 const prisma = new PrismaClient()
@@ -92,29 +92,29 @@ const page = async ({params}: { params: { locationId: string } }) => {
     gottestdienste = gottestdienste?.map(gottesdienst => {
         return {
             ...gottesdienst,
-            technikBild: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_BILD").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            TECHNIK_BILD: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_BILD").map(user => {
+                return {label: user.user.name, value: user.user.id}
             }),
-            technikTon: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_TON").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            TECHNIK_TON: gottesdienst.Gottesdienst_User.filter(user => user.role === "TECHNIK_TON").map(user => {
+                return {label: user.user.name, value: user.user.id}
             }),
-            prediger: gottesdienst.Gottesdienst_User.filter(user => user.role === "PREDIGER").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            PREDIGER: gottesdienst.Gottesdienst_User.filter(user => user.role === "PREDIGER").map(user => {
+                return {label: user.user.name, value: user.user.id}
             }),
-            moderator: gottesdienst.Gottesdienst_User.filter(user => user.role === "MODERATOR").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            MODERATOR: gottesdienst.Gottesdienst_User.filter(user => user.role === "MODERATOR").map(user => {
+                return {label: user.user.name, value: user.user.id}
             }),
-            kindertreff: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERTREFF").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            KINDERTREFF: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERTREFF").map(user => {
+                return {label: user.user.name, value: user.user.id}
             }),
-            kinderhute: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERHUTTE").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            KINDERHUTE: gottesdienst.Gottesdienst_User.filter(user => user.role === "KINDERHUTE").map(user => {
+                return {label: user.user.name, value: user.user.id}
             }),
-            musik: gottesdienst.Gottesdienst_User.filter(user => user.role === "MUSIK").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            MUSIK: gottesdienst.Gottesdienst_User.filter(user => user.role === "MUSIK").map(user => {
+                return {label: user.user.name, value: user.user.id}
             }),
-            begrussung: gottesdienst.Gottesdienst_User.filter(user => user.role === "BEGRUSSUNG").map(user => {
-                return {value: user.user.name, id: user.user.id}
+            BEGRUSSUNG: gottesdienst.Gottesdienst_User.filter(user => user.role === "BEGRUSSUNG").map(user => {
+                return {label: user.user.name, value: user.user.id}
             })
         }
     })
@@ -135,7 +135,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         [year: string]: any[]
     });
 
-    const columns = [
+    const columns: EditableTableColumn[] = [
         {
             name: "id",
             label: "ID",
@@ -155,7 +155,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         //     label: "Datum bis",
         //     type: "date",
         //     toggle: false,
-        //     disabled: false
+        //     disabled: true
         // },
         {
             name: "anlass",
@@ -172,7 +172,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             disabled: false
         },
         {
-            name: "theme",
+            name: "thema",
             label: "Thema",
             type: "text",
             toggle: true,
@@ -196,118 +196,134 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "findetStatt",
             label: "Findet statt",
-            type: "boolean",
+            type: "checkbox",
             toggle: true,
             disabled: false
         },
         {
             name: "abendmahl",
             label: "Abendmahl",
-            type: "boolean",
+            type: "checkbox",
             toggle: true,
             disabled: false
         },
         {
-            name: "prediger",
+            name: "PREDIGER",
             label: "Prediger",
             type: "select",
-            options: teams?.find(team => team.name === "PREDIGER")?.users || [],
-            multiple: false,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            options: teams?.find(team => team.name === "PREDIGER")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
         },
         {
-            name: "moderator",
-            label: "Moderator",
+            name: "MODERATOR",
+            label: "Morderator",
             type: "select",
-            options: teams?.find(team => team.name === "MODERATOR")?.users || [],
-            multiple: false,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            options: teams?.find(team => team.name === "MODERATOR")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
         },
         {
-            name: "technikBild",
+            name: "TECHNIK_BILD",
             label: "Technik Bild",
             type: "select",
-            options: teams?.find(team => team.name === "TECHNIK_BILD")?.users || [],
-            multiple: false,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            options: teams?.find(team => team.name === "TECHNIK_BILD")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
         },
         {
-            name: "technikTon",
+            name: "TECHNIK_TON",
             label: "Technik Ton",
             type: "select",
-            options: teams?.find(team => team.name === "TECHNIK_TON")?.users || [],
-            multiple: false,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            options: teams?.find(team => team.name === "TECHNIK_TON")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
         },
         {
-            name: "musik",
+            name: "MUSIK",
             label: "Musik",
-            type: "select",
-            options: teams?.find(team => team.name === "MUSIK")?.users || [],
-            multiple: true,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            type: "multiSelect",
+            options: teams?.find(team => team.name === "MUSIK")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
         },
         {
-            name: "begrussung",
+            name: "BEGRUSSUNG",
             label: "Begrüssung",
-            type: "select",
-            options: teams?.find(team => team.name === "BEGRUSSUNG")?.users || [],
-            multiple: false,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            type: "multiSelect",
+            options: teams?.find(team => team.name === "BEGRUSSUNG")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
         },
         {
-            name: "kindertreff",
+            name: "KINDERTREFF",
             label: "Kindertreff",
-            type: "select",
-            options: teams?.find(team => team.name === "KINDERTREFF")?.users || [],
-            multiple: true,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            type: "multiSelect",
+            options: teams?.find(team => team.name === "KINDERTREFF")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
         },
         {
-            name: "kinderhute",
+            name: "KINDERHUTE",
             label: "Kinderhüte",
-            type: "select",
-            options: teams?.find(team => team.name === "KINDERHUTTE")?.users || [],
-            multiple: true,
-            keys: {
-                value: "name",
-                id: "id"
-            },
+            type: "multiSelect",
+            options: teams?.find(team => team.name === "KINDERHUTE")?.users.map(
+                user => {
+                    return {
+                        label: user.name,
+                        value: user.id
+                    }
+                }
+            ) || [],
             toggle: true,
             disabled: false
 
@@ -327,171 +343,100 @@ const page = async ({params}: { params: { locationId: string } }) => {
             disabled: false
         },
     ]
-    let dropdown: string[] = []
-    if (groupedGottesdienste) {
-        dropdown = Object.keys(groupedGottesdienste)
-    }
 
-    async function handleSave(formData: FormData) {
+    async function handleSave(value: any, row: any, name: string) {
         "use server";
-        try {
-            const toCheck = [
-                {name: "TECHNIK_BILD", input: "technikBild"},
-                {name: "TECHNIK_TON", input: "technikTon"},
-                {name: "PREDIGER", input: "prediger"},
-                {name: "MODERATOR", input: "moderator"},
-                {name: "BEGRUSSUNG", input: "begrussung"}
-            ]
-            const toCreate: any[] = []
+        let connections = null
+        // if (row[name] === value) {
+        //     return
+        // }
 
-
-            const dateFromForm = formData.get("dateFrom") as string
-            let dateFrom
-            let dateUntill
-            if (dateFromForm === "") {
-                dateFrom = new Date()
-                dateUntill = new Date()
-            } else {
-                dateFrom = new Date(dateFromForm)
-                dateUntill = new Date(dateFromForm)
-                dateUntill.setHours(dateUntill.getHours() + 3)
+        if (['TECHNIK_BILD', 'TECHNIK_TON', 'PREDIGER', 'MODERATOR', 'MUSIK', 'BEGRUSSUNG', 'KINDERTREFF', 'KINDERHUTE'].includes(name)) {
+            if (!value) {
+                return
+            } else if (typeof value === 'string') {
+                value = [ value ]
             }
 
+            connections = true
+        }
 
-            const prisma = new PrismaClient()
-            if (!formData.get("id")) {
-                toCheck.map(role => {
-                    if (formData.get(role.input) !== "none") {
-                        toCreate.push(({
-                            userId: formData.get(role.input) as string,
-                            role: role.name,
-                        }))
-                    }
-                })
-
-                await prisma.gottesdienst.create({
-                    data: {
-                        dateFrom: dateFrom,
-                        dateUntill: dateUntill,
-                        anlass: formData.get("anlass") as string,
-                        kommentar: formData.get("kommentar") as string,
-                        thema: formData.get("theme") as string,
-                        textstelle: formData.get("textstelle") as string,
-                        externerPrediger: formData.get("externerPrediger") as string,
-                        findetStatt: formData.get("findetStatt") === "on",
-                        abendmahl: formData.get("abendmahl") === "on",
-                        kontakt: formData.get("kontakt") as string,
-                        youtubeLink: formData.get("youtubeLink") as string,
-                        locationId: locationId,
-                        Gottesdienst_User: {
-                            create: [
-                                ...toCreate,
-                                // @ts-ignore
-                                ...(formData.getAll("kindertreff") as string[]).map(user => ({
-                                    userId: user,
-                                    role: "KINDERTREFF"
-                                })),
-                                // @ts-ignore
-                                ...(formData.getAll("kinderhute") as string[]).map(user => ({
-                                    userId: user,
-                                    role: "KINDERHUTTE"
-                                })),
-                                // @ts-ignore
-                                ...(formData.getAll("musik") as string[]).map(user => ({
-                                    userId: user,
-                                    role: "MUSIK"
-                                }))
-                            ]
-                        }
-                    }
-                })
-            } else {
-                toCheck.map(role => {
-                    if (formData.get(role.input) !== "none") {
-                        toCreate.push(({
-                            userId: formData.get(role.input) as string,
-                            role: role.name,
-                            gottesdienstId: formData.get("id") as string
-                        }))
-                    }
-                })
-                await prisma.gottesdienst.update({
-                    where: {
-                        id: formData.get("id") as string
-                    },
-                    data: {
-                        dateFrom: dateFrom,
-                        dateUntill: dateUntill,
-                        anlass: formData.get("anlass") as string,
-                        kommentar: formData.get("kommentar") as string,
-                        thema: formData.get("theme") as string,
-                        textstelle: formData.get("textstelle") as string,
-                        externerPrediger: formData.get("externerPrediger") as string,
-                        findetStatt: formData.get("findetStatt") === "on",
-                        abendmahl: formData.get("abendmahl") === "on",
-                        kontakt: formData.get("kontakt") as string,
-                        youtubeLink: formData.get("youtubeLink") as string,
-                    }
-                })
+        const prisma = new PrismaClient()
+        if (connections) {
+            try {
                 await prisma.gottesdienst_User.deleteMany({
                     where: {
-                        gottesdienstId: formData.get("id") as string
+                        gottesdienstId: row.id,
+                        role: name as RelationRoleGottesdienst
                     }
                 })
-
-                await prisma.gottesdienst_User.createMany({
-                    data: [
-                        ...toCreate,
-                        // @ts-ignore
-                        ...(formData.getAll("kindertreff") as string[]).map(user => ({
-                            userId: user,
-                            role: "KINDERTREFF",
-                            gottesdienstId: formData.get("id") as string
-                        })),
-                        // @ts-ignore
-                        ...(formData.getAll("kinderhute") as string[]).map(user => ({
-                            userId: user,
-                            role: "KINDERHUTTE",
-                            gottesdienstId: formData.get("id") as string
-                        })),
-                        // @ts-ignore
-                        ...(formData.getAll("musik") as string[]).map(user => ({
-                            userId: user,
-                            role: "MUSIK",
-                            gottesdienstId: formData.get("id") as string
-                        }))
-                    ]
-                })
+            } catch (e) {
+                console.error(e)
             }
-            return revalidatePath(`/location/${locationId}/planer`)
-        } catch (e) {
-            console.error(e)
-        } finally {
-            await prisma.$disconnect()
+
+            await prisma.gottesdienst_User.createMany({
+                data: value?.map((id: string) => {
+                    return {
+                        userId: id,
+                        gottesdienstId: row.id,
+                        role: name as RelationRoleGottesdienst
+                    }
+                })
+            })
+        } else if (['dateFrom', 'dateUntill'].includes(name))  {
+            value = new Date(value)
+            try {
+                await prisma.gottesdienst.update({
+                    where: {
+                        id: row.id
+                    },
+                    data: {
+                        dateFrom: value,
+                        dateUntill: value
+                    }
+                })
+            } catch (e) {
+                console.error(e)
+            } finally {
+                await prisma.$disconnect()
+            }
+        } else
+        {
+            try {
+                await prisma.gottesdienst.update({
+                    where: {
+                        id: row.id
+                    },
+                    data: {
+                        [name]: value
+                    }
+                })
+            } catch (e) {
+                console.error(e)
+            } finally {
+                await prisma.$disconnect()
+            }
         }
     }
+
 
     async function handleOpenZeitplaner(item: any) {
         "use server"
         redirect(`/location/${locationId}/planer/${item.id}`)
     }
 
-    const actions = [
-        {
-            handler: handleOpenZeitplaner,
-            tooltip: "Zeitplaner öffnen",
-            icon: fas.faRectangleList,
-            style: "btn-neutral"
-        }
-    ]
-
-
     async function handleDelete(item: any) {
         "use server";
         const prisma = new PrismaClient()
-        try {
 
+        try {
             await prisma.gottesdienst_User.deleteMany({
+                where: {
+                    gottesdienstId: item.id
+                }
+            })
+
+            await prisma.zeitplan.deleteMany({
                 where: {
                     gottesdienstId: item.id
                 }
@@ -507,28 +452,65 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } finally {
             await prisma.$disconnect()
         }
+
         return revalidatePath(`/location/${locationId}/planer`)
     }
+
+    async function createHandler(dontRemove: any) {
+        "use server";
+
+        const prisma = new PrismaClient()
+
+        try {
+            await prisma.gottesdienst.create({
+                data: {
+                    location: {
+                        connect: {
+                            id: locationId
+                        }
+                    }
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
+        }
+
+        return revalidatePath(`/location/${locationId}/planer`)
+    }
+
+
+    const actions = [
+        {
+            handler: handleOpenZeitplaner,
+            tooltip: "Zeitplaner öffnen",
+            icon: fas.faRectangleList,
+            style: "btn-neutral"
+        }
+    ]
 
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
             <Suspense fallback={<Loading/>}>
-            <main
-                className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
-            >
-                <CustomTable columns={columns} data={groupedGottesdienste} dropdown={dropdown} tableName={'planer'}
-                             addButton={user_location_role != RelationRoleLocation.VIEWER}
-                             editButton={user_location_role != RelationRoleLocation.VIEWER}
-                             deleteButton={user_location_role != RelationRoleLocation.VIEWER}
-                             handleSave={handleSave}
-                             handleDelete={handleDelete}
-                             selectMenu={true}
-                             exportButton={true}
-                             fullscreenButton={true}
-                             actions={actions}
-                />
-            </main>
+                <main
+                    className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
+                >
+                    <EditableTable data={groupedGottesdienste}
+                                   columns={columns}
+                                   rowActions={actions}
+                                   saveHandler={handleSave} deleteHandler={handleDelete} grouped={true}
+                                   allowCreate={user_location_role != RelationRoleLocation.VIEWER}
+                                   allowDelete={user_location_role != RelationRoleLocation.VIEWER}
+                                   allowFullscreen={true}
+                                   allowExport={true}
+                                   allowEdit={user_location_role != RelationRoleLocation.VIEWER}
+                                   tableName={"planer"}
+                                   createHandler={createHandler}
+                    />
+
+                </main>
             </Suspense>
         </LocationLayout>
     )

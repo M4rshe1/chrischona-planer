@@ -51,7 +51,12 @@ const Home = async () => {
                 Gottesdienst_User: {
                     select: {
                         role: true,
-                        userId: true
+                        userId: true,
+                        user: {
+                            select: {
+                                name: true
+                            }
+                        }
                     }
                 },
                 location: {

@@ -70,35 +70,61 @@ const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
                     <ul
                         className={"bg-base-200 rounded-md dropdown-content flex flex-col gap-2 p-2 z-40 w-64 border-neutral border-2 shadow-lg"}>
                         {
-                            events.map((event, index) => (
-                                <li key={index}
-                                    className="flex justify-between text-left w-full flex-col bg-base-100 p-2 rounded-md border-neutral border-2 shadow-lg">
-                                    <h3 className="font-semibold w-full">{event.anlass}</h3>
-                                    <p><FontAwesomeIcon icon={fas.faLocationDot}
-                                                        className={'mr-1'}/>{event.location.name}</p>
-                                    {
-                                        !event.findetStatt ? <p
-                                            className={"text-error font-semibold"}
-                                        >
-                                            <FontAwesomeIcon icon={fas.faCircleExclamation} className={'mr-1'}/>Findet
-                                            nicht statt
-                                        </p> : ""
-                                    }
-                                    {
-                                        event.abendmahl ? <p
-                                            className={"text-warning font-semibold"}
-                                        >
-                                            <FontAwesomeIcon icon={fas.faWineGlass} className={'mr-1'}/>Mit Abendmahl
-                                        </p> : ""
-                                    }
-                                    {
-                                        hasJob(event) ? (
-                                            <p className="text-blue-600 font-semibold"><FontAwesomeIcon
-                                                icon={fas.faUser} className={'mr-1'}/>{hasJob(event).role}</p>
-                                        ) : ""
-                                    }
-                                </li>
-                            ))
+                            events.map((event, index) => {
+                                const PREDIGER = event.externerPREDIGER ? event.externerPREDIGER : event.Gottesdienst_User.find((u: any) => u.role === "PREDIGER")?.user?.name;
+                                return (
+
+                                    <li key={index}
+                                        className="grid grid-cols-[30px_1fr] items-center text-left w-full flex-col bg-base-100 p-2 rounded-md border-neutral border-2 shadow-lg">
+                                        <h3 className="font-semibold w-full col-span-2">{event.anlass}</h3>
+                                        <FontAwesomeIcon icon={fas.faLocationDot} className={'mr-1'}/>
+                                        <p>{event.location.name}</p>
+                                        {
+                                            PREDIGER ? (
+                                                <>
+                                                    <FontAwesomeIcon icon={fas.faPersonChalkboard} className={'mr-1'}/>
+                                                    <p className={"font-semibold"}>{PREDIGER}</p>
+                                                </>
+                                            ) : ""
+                                        }
+                                        {
+
+                                            !event.findetStatt ? (
+                                                <>
+                                                    <FontAwesomeIcon icon={fas.faCircleExclamation} className={'mr-1 text-error '}/>
+                                                    <p className={"text-error font-semibold"}>Findet nicht statt</p>
+                                                </>
+                                            ) : ""
+                                        }
+                                        {
+                                            event.thema ? (
+                                                <>
+                                                    <FontAwesomeIcon icon={fas.faBookBible} className={'mr-1'}/>
+                                                    <p className={"font-semibold"}>{event.thema}</p>
+                                                </>
+                                            ) : ""
+                                        }
+                                        {
+
+                                            event.abendmahl ? (
+                                                <>
+                                                    <FontAwesomeIcon icon={fas.faWineGlass} className={'text-warning mr-1'}/>
+                                                    <p className={"text-warning font-semibold"}>Mit Abendmahl</p>
+                                                </>
+                                            ) : ""
+                                        }
+                                        {
+
+                                            hasJob(event) ? (
+                                                <>
+                                                    <FontAwesomeIcon icon={fas.faUserGear} className={'text-blue-600 mr-1'}/>
+                                                    <p className="text-blue-600 font-semibold">{hasJob(event).role}</p>
+                                                </>
+                                            ) : ""
+                                        }
+                                    </li>
+                                )
+                            })
                         }
                     </ul>
                 ) : ""

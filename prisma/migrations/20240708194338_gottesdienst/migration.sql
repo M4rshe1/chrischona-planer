@@ -6,4 +6,4 @@
 */
 -- AlterTable
 ALTER TABLE "Gottesdienst" DROP COLUMN "externerPastor",
-ADD COLUMN     "externerPrediger" TEXT;
+ADD COLUMN     "externerPREDIGER" TEXT;

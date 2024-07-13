@@ -71,6 +71,7 @@ export const authOptions: NextAuthOptions = {
                         }
                     }
                 });
+
                 await prisma.$disconnect();
 
                 if (!user) {

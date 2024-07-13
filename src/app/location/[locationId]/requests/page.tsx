@@ -1,6 +1,6 @@
 import LocationLayout from "@/components/locationLayout";
 import {authOptions} from '@/lib/authOptions';
-import {UserSession} from "@/lib/types";
+import {EditableTableRowAction, UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation, Status} from "@prisma/client";
@@ -9,6 +9,7 @@ import {fas} from "@fortawesome/free-solid-svg-icons";
 import CustomTable from "@/components/customTable";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
+import EditableTable from "@/components/editableTable";
 
 
 const prisma = new PrismaClient()
@@ -54,17 +55,17 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
     const user_location_role = location.Users.find((user) => user.userId === session.user.id)?.relation ?? "VIEWER"
 
-    const actions = [
+    const actions: EditableTableRowAction[] = [
         {
             tooltip: "Genehmigen",
             icon: fas.faCheck,
-            action: handleApprove,
+            handler: handleApprove,
             style: " btn-neutral hover:bg-success hover:text-white"
         },
         {
             tooltip: "Ablehnen",
             icon: fas.faTimes,
-            action: handledeny,
+            handler: handledeny,
             style: " btn-neutral hover:bg-error hover:text-white"
         }
     ]
@@ -103,17 +104,12 @@ const page = async ({params}: { params: { locationId: string } }) => {
             name: "relation",
             label: "Relation",
             type: "select",
-            multiple: false,
             options: Object.values(RelationRoleLocation).map((value) => {
                 return {
-                    value: value,
-                    id: value
+                    label: value,
+                    value: value
                 }
             }),
-            keys: {
-                value: "value",
-                id: "id"
-            },
             toggle: true,
             disabled: false
         }
@@ -131,12 +127,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
             relation: [{value: anfrage.relation, id: anfrage.relation}]
         }
     })
-
-
-    const groupedAnfragen = {
-        alle: anfragen
-    }
-    const dropdown = Object.keys(groupedAnfragen)
 
     async function handleApprove(item: any) {
         "use server"
@@ -186,6 +176,21 @@ const page = async ({params}: { params: { locationId: string } }) => {
         return revalidatePath(`/location/${locationId}/requests`)
     }
 
+    async function handleDelete(item: any) {
+        "use server"
+        return revalidatePath(`/location/${locationId}/requests`)
+    }
+
+    async function handleSave(value: any, row: any, column: any) {
+        "use server"
+        return revalidatePath(`/location/${locationId}/requests`)
+    }
+
+    async function handleCreate() {
+        "use server"
+        return revalidatePath(`/location/${locationId}/requests`)
+    }
+
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
@@ -193,10 +198,20 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 <main
                     className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
                 >
-                    <CustomTable columns={columns} data={groupedAnfragen} dropdown={dropdown} tableName={'requests'}
-                                 editButton={false} deleteButton={false}
-                                 actions={actions} selectMenu={false}
-
+                    <EditableTable
+                        columns={columns}
+                        data={anfragen}
+                        rowActions={actions}
+                        headerActions={[]}
+                        saveHandler={handleSave}
+                        createHandler={handleCreate}
+                        deleteHandler={handleDelete}
+                        allowEdit={false}
+                        allowCreate={false}
+                        allowDelete={false}
+                        allowExport={false}
+                        allowFullscreen={false}
+                        tableName={"Anfragen"}
                     />
                 </main>
             </Suspense>

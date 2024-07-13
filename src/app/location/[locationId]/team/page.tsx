@@ -1,13 +1,13 @@
 import LocationLayout from "@/components/locationLayout";
 import {authOptions} from '@/lib/authOptions';
-import {UserSession} from "@/lib/types";
+import {EditableTableColumn, UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation} from "@prisma/client";
-import CustomTable from "@/components/customTable";
 import {revalidatePath} from "next/cache";
 import Loading from "@/app/loading";
-import { Suspense } from "react";
+import {Suspense} from "react";
+import EditableTable from "@/components/editableTable";
 
 
 const prisma = new PrismaClient()
@@ -71,7 +71,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
     const user_location_role = location.Users.find((user) => user.userId === session.user.id)?.relation ?? "VIEWER"
 
-    const columns = [
+    const columns: EditableTableColumn[] = [
         {
             name: "id",
             label: "ID",
@@ -82,14 +82,14 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "name",
             label: "Name",
-            type: "hidden",
+            type: "text",
             toggle: true,
             disabled: true
         },
         {
             name: "email",
             label: "Email",
-            type: "hidden",
+            type: "email",
             toggle: true,
             disabled: true
         },
@@ -99,28 +99,23 @@ const page = async ({params}: { params: { locationId: string } }) => {
             type: "select",
             options: Object.values(RelationRoleLocation).map((value) => {
                 return {
-                    value: value,
-                    id: value
+                    label: value,
+                    value: value
                 }
             }),
-            multiple: false,
-            keys: {
-                value: "value",
-                id: "id"
-            },
             toggle: true,
             disabled: false
         }
     ]
 
 
-    async function handleDelete(id: string) {
+    async function handleDelete(item: any) {
         "use server"
         const prisma = new PrismaClient()
         try {
             await prisma.user_location.delete({
                 where: {
-                    id: id
+                    id: item.connectionId
                 }
             })
         } catch (e) {
@@ -131,16 +126,18 @@ const page = async ({params}: { params: { locationId: string } }) => {
         return revalidatePath(`/location/${locationId}/team`)
     }
 
-    async function handleSave(item: any) {
+    async function handleSave(value: any, row: any[], name: string) {
         "use server"
+        console.log(value, row, name)
         const prisma = new PrismaClient()
         try {
             await prisma.user_location.update({
                 where: {
-                    id: item.id
+                    // @ts-ignore
+                    id: row.connectionId
                 },
                 data: {
-                    relation: item.relation
+                    relation: value
                 }
             })
         } catch (e) {
@@ -150,41 +147,51 @@ const page = async ({params}: { params: { locationId: string } }) => {
         }
         return revalidatePath(`/location/${locationId}/team`)
     }
-
 
     users = users?.map((user) => {
         return {
             id: user.id,
             name: user.name,
             email: user.email,
-            relation: [{value: user.locations[0].relation, id: user.locations[0].relation}],
+            relation: [{value: user.locations[0].relation, label: user.locations[0].relation}],
             connectionId: user.locations[0].id
         }
     })
 
-    const groupedUsers = {
-        alle: users
+    async function handleCreate() {
+        "use server"
+        return null
     }
-    const dropdown = Object.keys(groupedUsers)
+
 
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
             <Suspense fallback={<Loading/>}>
-            <main
-                className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
-            >
-                {
-
-                    <CustomTable columns={columns} data={groupedUsers} dropdown={dropdown} tableName={'team'}
-                                 editButton={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'} deleteButton={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'}
-                                 selectMenu={false}
-                                 handleDelete={handleDelete}
-                                 handleSave={handleSave}
-
+                <main
+                    className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
+                >
+                    <EditableTable
+                        data={users}
+                        saveHandler={handleSave}
+                        createHandler={handleCreate}
+                        deleteHandler={handleDelete}
+                        columns={columns}
+                        allowEdit={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'}
+                        allowCreate={false}
+                        allowDelete={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'}
+                        allowFullscreen={true}
+                        allowExport={false}
+                        tableName={"team"}
                     />
-                }
-            </main>
+                    {/*<CustomTable columns={columns} data={groupedUsers} dropdown={dropdown} tableName={'team'}*/}
+                    {/*             editButton={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'} deleteButton={['OWNER', 'MANAGER'].includes(user_location_role) || session.user.role === 'ADMIN'}*/}
+                    {/*             selectMenu={false}*/}
+                    {/*             handleDelete={handleDelete}*/}
+                    {/*             handleSave={handleSave}*/}
+
+                    {/*/>*/}
+                </main>
             </Suspense>
         </LocationLayout>
     )

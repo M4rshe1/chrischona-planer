@@ -35,12 +35,12 @@ const Zeitplan = ({gottesdienst, sections}: { gottesdienst: any, sections: any }
                 })}
                 </HeaderCell>
                 <HeaderCell>Predigt</HeaderCell>
-                <DataCell>{gottesdienst.externerPrediger ? gottesdienst.externerPrediger : gottesdienst.Gottesdienst_User.find((u: any) => u.role === "PREDIGER")?.user.name}</DataCell>
+                <DataCell>{gottesdienst.externerPREDIGER ? gottesdienst.externerPREDIGER : gottesdienst.Gottesdienst_User.find((u: any) => u.role === "PREDIGER")?.user.name}</DataCell>
                 <HeaderCell>Moderation</HeaderCell>
                 <DataCell>{gottesdienst.Gottesdienst_User.find((u: any) => u.role === "MODERATOR")?.user.name}</DataCell>
                 <HeaderCell>Thema</HeaderCell>
                 <DataCell>{gottesdienst.thema}</DataCell>
-                <HeaderCell>Musik</HeaderCell>
+                <HeaderCell>MUSIK</HeaderCell>
                 <DataCell>{gottesdienst.Gottesdienst_User.filter((u: any) => u.role === "MUSIK").map((u: any) => u.user.name).join(", ")}</DataCell>
                 <HeaderCell>Textstelle</HeaderCell>
                 <DataCell>{gottesdienst.textstelle}</DataCell>
@@ -54,6 +54,7 @@ const Zeitplan = ({gottesdienst, sections}: { gottesdienst: any, sections: any }
             <div
                 className={"grid grid-cols-[auto_auto_1fr_auto_auto] w-full mt-4"}
             >
+
                 <HeaderCell
                     style={"text-center col-span-2"}
                 >Zeit/Dauer</HeaderCell>
@@ -66,29 +67,55 @@ const Zeitplan = ({gottesdienst, sections}: { gottesdienst: any, sections: any }
                 <HeaderCell
                     style={"text-center"}
                 >Bild/Ton</HeaderCell>
-                <DataCell>
+                <DataCell
+                style={"text-xs border-l-red-800 border-l-4 border-t-red-800 border-t-4"}
+                >
                     zuvor
                 </DataCell>
-                <DataCell></DataCell>
-                <DataCell>
+                <DataCell
+                style={"text-xs border-t-red-800 border-t-4"}
+                ></DataCell>
+                <DataCell
+                style={"text-xs border-t-red-800 border-t-4"}
+                >
                     Einrichten / Soundcheck / Lüften
                 </DataCell>
-                <DataCell></DataCell>
-                <DataCell></DataCell>
-                <DataCell>
+                <DataCell
+                style={"text-xs border-t-red-800 border-t-4"}
+                ></DataCell>
+                <DataCell
+                    style={"text-xs border-r-red-800 border-r-4 border-t-red-800 border-t-4"}
+                ></DataCell>
+                <DataCell
+                    style={"text-xs border-l-red-800 border-l-4"}
+                >
                     9:15
                 </DataCell>
                 <DataCell></DataCell>
-                <DataCell>Gebet</DataCell>
+                <DataCell
+                style={"text-xs"}
+                >Gebet</DataCell>
                 <DataCell></DataCell>
-                <DataCell></DataCell>
-                <DataCell>
+                <DataCell
+                    style={"text-xs border-r-red-800 border-r-4"}
+                ></DataCell>
+                <DataCell
+                    style={"text-xs border-l-red-800 border-l-4 border-b-red-800 border-b-4"}
+                >
                     9:30
                 </DataCell>
-                <DataCell></DataCell>
-                <DataCell>Begrüssen / Radar laufen lassen</DataCell>
-                <DataCell></DataCell>
-                <DataCell></DataCell>
+                <DataCell
+                style={"text-xs border-b-red-800 border-b-4"}
+                ></DataCell>
+                <DataCell
+                style={"text-xs border-b-red-800 border-b-4"}
+                >Begrüssen / Radar laufen lassen</DataCell>
+                <DataCell
+                style={"text-xs border-b-red-800 border-b-4"}
+                ></DataCell>
+                <DataCell
+                    style={"text-xs border-r-red-800 border-r-4 border-b-red-800 border-b-4"}
+                ></DataCell>
                 {
                     sections.map((section: any, index: number) => {
                         return (

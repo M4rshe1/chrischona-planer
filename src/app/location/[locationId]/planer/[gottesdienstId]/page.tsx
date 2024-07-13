@@ -4,10 +4,11 @@ import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation} from "@prisma/client";
-import CustomTable from "@/components/customTable";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
 import {fas} from "@fortawesome/free-solid-svg-icons";
+import EditableTable from "@/components/editableTable";
+import {revalidatePath} from "next/cache";
 
 
 const prisma = new PrismaClient()
@@ -110,58 +111,69 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
         } finally {
             await prisma.$disconnect()
         }
+        return revalidatePath(`/location/${locationId}/planer/${params.gottesdienstId}`)
     }
 
-    async function handleSave(formData: FormData) {
+    async function handleSave(value: any, item: any, name: string) {
         "use server"
-        const id = formData.get("id") as string
-        if (id) {
-            try {
-                await prisma.zeitplan.update({
-                    where: {
-                        id: id
-                    },
-                    data: {
-                        timeFrom: formData.get("timeFrom") as string,
-                        durationMin: parseInt(formData.get("durationMin") as string),
-                        was: formData.get("was") as string,
-                        wer: formData.get("wer") as string,
-                        bild_ton: formData.get("bild_ton") as string,
-                    }
-                })
-            } catch (e) {
-                console.error(e)
-            } finally {
-                await prisma.$disconnect()
-            }
-        } else {
-            try {
-                await prisma.zeitplan.create({
-                    data: {
-                        timeFrom: formData.get("timeFrom") as string,
-                        durationMin: parseInt(formData.get("durationMin") as string),
-                        was: formData.get("was") as string,
-                        wer: formData.get("wer") as string,
-                        bild_ton: formData.get("bild_ton") as string,
-                        gottesdienstId: params.gottesdienstId
-                    }
-                })
-            } catch (e) {
-                console.error(e)
-            } finally {
-                await prisma.$disconnect()
-            }
+        try {
+            await prisma.zeitplan.update({
+                where: {
+                    id: item.id
+                },
+                data: {
+                    [name]: value
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
         }
+        return revalidatePath(`/location/${locationId}/planer/${params.gottesdienstId}`)
     }
-
-    const groupedUsers = {
-        alle: sections
-    }
-    const dropdown = Object.keys(groupedUsers)
 
     async function handlePrint() {
         "use server"
         redirect(`/location/${locationId}/planer/${params.gottesdienstId}/print`)
+    }
+
+    async function handleCreate() {
+        "use server"
+        const prisma = new PrismaClient()
+        try {
+            const latest = await prisma.zeitplan.findMany({
+                where: {
+                    gottesdienstId: params.gottesdienstId
+                },
+                orderBy: {
+                    timeFrom: 'desc'
+                },
+            })
+            const latestTime = latest[0]?.timeFrom
+            const latestDuration = latest[0]?.durationMin
+            let newTimeString = "09:00"
+            if (latestTime && latestDuration) {
+                const newTime = new Date()
+                newTime.setHours(parseInt(latestTime.split(":")[0]))
+                newTime.setMinutes(parseInt(latestTime.split(":")[1]) + latestDuration)
+                newTimeString = `${newTime.getHours()}:${newTime.getMinutes()}`
+            }
+            console.log(newTimeString)
+            if (newTimeString.length < 5) newTimeString = "0" + newTimeString
+
+            await prisma.zeitplan.create({
+                data: {
+                    gottesdienstId: params.gottesdienstId,
+                    timeFrom: newTimeString,
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
+        }
+        return revalidatePath(`/location/${locationId}/planer/${params.gottesdienstId}`)
     }
 
     const headerActions = [
@@ -181,20 +193,19 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
                 <main
                     className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
                 >
-                    {
-
-                        <CustomTable columns={columns} data={groupedUsers} dropdown={dropdown} tableName={'team'}
-                                     editButton={user_location_role != RelationRoleLocation.VIEWER}
-                                     deleteButton={user_location_role != RelationRoleLocation.VIEWER}
-                                     addButton={user_location_role != RelationRoleLocation.VIEWER}
-                                     selectMenu={false}
-                                     handleDelete={handleDelete}
-                                     handleSave={handleSave}
-                                     headerActions={headerActions}
-                                     toggleButtomTextareaPre={true}
-
-                        />
-                    }
+                    <EditableTable data={sections}
+                                   saveHandler={handleSave}
+                                   createHandler={handleCreate}
+                                   deleteHandler={handleDelete}
+                                   columns={columns}
+                                   allowEdit={user_location_role != RelationRoleLocation.VIEWER}
+                                   allowCreate={user_location_role != RelationRoleLocation.VIEWER}
+                                   allowDelete={user_location_role != RelationRoleLocation.VIEWER}
+                                   allowFullscreen={true}
+                                   allowExport={false}
+                                   tableName={"Zeitplan"}
+                                   headerActions={headerActions}
+                    />
                 </main>
             </Suspense>
         </LocationLayout>
