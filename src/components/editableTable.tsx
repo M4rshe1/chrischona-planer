@@ -6,7 +6,8 @@ import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {
     CheckboxInput,
-    DateInput, MultiSelectInput,
+    DateInput,
+    MultiSelectInput,
     NumberInput,
     SelectInput,
     TextareaInput,
@@ -15,9 +16,12 @@ import {
 
 const EditableTable = ({
                            data,
-                           saveHandler = (value: any, row: any[], name: string) => {},
-                           createHandler = (locationId: string) => {},
-                           deleteHandler = (row: any[]) => {},
+                           saveHandler = (value: any, row: any[], name: string) => {
+                           },
+                           createHandler = (locationId: string) => {
+                           },
+                           deleteHandler = (row: any[]) => {
+                           },
                            rowActions,
                            headerActions,
                            grouped,
@@ -27,6 +31,7 @@ const EditableTable = ({
                            allowDelete = false,
                            allowFullscreen = false,
                            allowExport = false,
+                           allowFilter = true,
                            tableName = "table"
                        }: {
     data: any[] | any,
@@ -37,11 +42,12 @@ const EditableTable = ({
     headerActions?: EditableTableHeaderAction[],
     grouped?: boolean,
     columns: any[],
-    allowEdit: boolean,
-    allowCreate: boolean,
-    allowDelete: boolean,
-    allowFullscreen: boolean,
-    allowExport: boolean,
+    allowEdit?: boolean,
+    allowCreate?: boolean,
+    allowDelete?: boolean,
+    allowFullscreen?: boolean,
+    allowExport?: boolean,
+    allowFilter?: boolean,
     tableName: string,
 }) => {
     const [selectedColumns, setSelectedColumns] = useState<EditableTableColumn[]>(columns);
@@ -49,61 +55,106 @@ const EditableTable = ({
     const [countRowsPage, setCountRowsPage] = useState<number>(10);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [tableFullscreen, setTableFullscreen] = useState<boolean>(false);
+    const [filter, setFilter] = useState(
+        columns.map((column) => {
+            return {
+                name: column.name,
+                value: "",
+                label: column.label,
+                type: column.type
+            }
+        })
+    );
 
-    const memoizedSaveHandler = useCallback(saveHandler, [saveHandler]);
+    function clientSaveHandler(value: any, row: any[], name: string) {
+        const tmpData = grouped ? data[selectedGroup as string] : data;
+        const column = columns.find((column) => column.name === name);
+        const newData = tmpData.map((r: any) => {
+            if (r === row) {
+                if (column?.type === "number") {
+                    return {
+                        ...r,
+                        [name]: parseInt(value)
+                    }
+                } else if (column?.type === "select") {
+                    return {
+                        ...r,
+                        [name]: column.options.find((option: any) => option.value === value)
+                    }
+                } else if (column?.type === "multiSelect") {
+                    return {
+                        ...r,
+                        [name]: column.options.filter((option: any) => value.includes(option.value))
+                    }
+                }
+            }
+            return r;
+        })
+        if (grouped) {
+            data[selectedGroup as string] = newData;
+        } else {
+            data = newData;
+        }
+        saveHandler(value, row, name)
+    }
+
+
+    const memoizedSaveHandler = useCallback(clientSaveHandler, [clientSaveHandler]);
     const memoizedCreateHandler = useCallback(createHandler, [createHandler]);
     const memoizedDeleteHandler = useCallback(deleteHandler, [deleteHandler]);
-
     const memoizedHandleExport = useCallback(hadleExport, [columns, data, grouped, selectedGroup, tableName])
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const groups =  (grouped ? Object.keys(data) : [])
+    const groups = (grouped ? Object.keys(data) : [])
 
     function getRows() {
         if (grouped) {
             if (groups.length > 0 && (selectedGroup === null || !groups.includes(selectedGroup as string))) {
                 setSelectedGroup(Object.keys(data)[0])
-                return data[Object.keys(data)[0]].slice((currentPage - 1) * countRowsPage, currentPage * countRowsPage)
+                const filteredData = filterRows(data[Object.keys(data)[0]])
+                // @ts-ignore
+                return filteredData.slice((currentPage - 1) * countRowsPage, currentPage * countRowsPage)
             } else if (groups.length > 0) {
-                return data[selectedGroup as string].slice((currentPage - 1) * countRowsPage, currentPage * countRowsPage)
+                const filteredData = filterRows(data[selectedGroup as string])
+                // @ts-ignore
+                return filteredData.slice((currentPage - 1) * countRowsPage, currentPage * countRowsPage)
             } else {
                 return []
             }
         } else {
-            return data.slice((currentPage - 1) * countRowsPage, currentPage * countRowsPage)
+            const filteredData = filterRows(data)
+            return filteredData.slice((currentPage - 1) * countRowsPage, currentPage * countRowsPage)
         }
+    }
+
+    function filterRows(rows: any[]) {
+        return rows.filter((row) => {
+            return filter.every((filterItem) => {
+                if (filterItem.value === "" || row[filterItem.name] === null) {
+                    return true;
+                }
+                return row[filterItem.name].toString().toLowerCase().includes(filterItem.value.toLowerCase())
+            })
+        })
     }
 
     const rows = getRows();
 
+
     useEffect(() => {
-        const localStoredColumnsFresh = JSON.parse(localStorage.getItem("chrischona_planer_ " + tableName + "_columns") || "[]")
-        let localStoredColumns = localStoredColumnsFresh.map((column: any) => {
-            return {
-                ...columns.find((c: any) => c.name === column.name),
-                ...column,
+        const storedColumns = JSON.parse(localStorage.getItem("chrischona_planer_" + tableName + "_columns") as string);
+        const newColumns = columns.map((column) => {
+            const storedColumn = storedColumns?.find((c: EditableTableColumn) => c.name === column.name);
+            if (storedColumn) {
+                return storedColumn;
             }
-        })
-        if (
-            localStoredColumns && localStoredColumns.length > 0 &&
-            Object.keys(localStoredColumns).sort().toString() === Object.keys(columns).sort().toString() &&
-            localStoredColumns.map((column: any) => column.type).sort().toString() === columns.map((column: any) => column.type).sort().toString()
-        ) {
-            localStoredColumns = localStoredColumns.filter((column: any) => {
-                return columns.some((c: any) => c.name === column.name)
-            });
-            setSelectedColumns(localStoredColumns)
-        } else {
-            const newColumns = columns.map((column) => {
-                return {
-                    name: column.name,
-                    label: column.label,
-                    type: column.type,
-                    toggle: true
-                }
-            });
-            localStorage.setItem("chrischona_planer_ " + tableName + "_columns", JSON.stringify(newColumns));
-        }
+            return {
+                ...column,
+                toggle: true
+            }
+        });
+        localStorage.setItem("chrischona_planer_" + tableName + "_columns", JSON.stringify(newColumns));
+        setSelectedColumns(newColumns);
     }, [tableName, columns]);
 
     const dropdownItems = useMemo(() => {
@@ -173,6 +224,19 @@ const EditableTable = ({
         })}.csv`;
         a.click();
         URL.revokeObjectURL(url);
+    }
+
+    function changeFilterValue(e: any, filterItem: any) {
+        const newFilter = filter.map((item) => {
+            if (item.name === filterItem.name) {
+                return {
+                    ...item,
+                    value: e.target.value
+                }
+            }
+            return item;
+        })
+        setFilter(newFilter);
     }
 
 
@@ -331,6 +395,57 @@ const EditableTable = ({
                     </tr>
                     </thead>
                     <tbody>
+                    <tr>
+                        {
+                            ((allowDelete || rowActions) && allowFilter) && <td
+                                className={"flex gap-2 items-center h-full flex-nowrap"}
+                            >
+                                {
+                                    allowDelete && <button
+                                        className={"btn btn-sm btn-neutral tooltip pointer-events-none opacity-0"}
+                                    >
+                                        <FontAwesomeIcon icon={fas.faTrash}/>
+                                    </button>
+                                }
+                                {
+                                    rowActions?.map((action: any, index: number) => {
+                                        return (
+                                            <button
+                                                key={index}
+                                                className={"btn btn-sm btn-neutral tooltip pointer-events-none opacity-0"}
+                                            >
+                                                <FontAwesomeIcon icon={action.icon}/>
+                                            </button>
+                                        )
+                                    })
+                                }
+                            </td>
+                        }
+                        {
+                            allowFilter &&
+                            filter.map((filterItem, index) => {
+                                if (selectedColumns.find((column) => column.name === filterItem.name)?.toggle === false) {
+                                    return;
+                                }
+
+                                return (
+                                    <td
+                                        key={index}
+                                    >
+                                        <input
+                                            type={"text"}
+                                            defaultValue={filterItem.value}
+                                            onChange={(e) => {
+                                                changeFilterValue(e, filterItem)
+                                            }}
+                                            placeholder={filterItem.label}
+                                            className={"input input-sm input-bordered"}
+                                        />
+                                    </td>
+                                )
+                            })
+                        }
+                    </tr>
                     {
                         rows.length === 0 &&
                         <tr>
@@ -363,33 +478,45 @@ const EditableTable = ({
                 className={"flex flex-row justify-between items-center w-full"}
             >
                 <div
-                className={"bg-neutral p-2 rounded-md shadow-sm font-semibold text-neutral-content text-sm h-12 flex items-center"}
+                    className={"bg-neutral p-2 rounded-md shadow-sm font-semibold text-neutral-content text-sm h-12 flex items-center"}
                 >
-                    {(currentPage - 1) * countRowsPage} bis {currentPage * countRowsPage} von {rows.length}
+                    {
+                        <>{(currentPage - 1) * countRowsPage + 1} bis {currentPage * countRowsPage} von {grouped ? data[selectedGroup as string]?.length || 0 : data.length}</>
+                    }
                 </div>
                 <div
                     className={"join join-horizontal"}
                 >
-                    {
-                        currentPage > 1 &&
-                        <div
-                            role={"button"}
-                            className={"btn btn-neutral"}
-                            onClick={() => setCurrentPage(currentPage - 1)}
-                        >
-                            <FontAwesomeIcon icon={fas.faChevronLeft}/>
-                        </div>
-                    }
-                    {
-                        currentPage < rows.length / countRowsPage &&
-                        <div
-                            role={"button"}
-                            className={"btn btn-neutral"}
-                            onClick={() => setCurrentPage(currentPage + 1)}
-                        >
-                            <FontAwesomeIcon icon={fas.faChevronRight}/>
-                        </div>
-                    }
+                    <button
+                        disabled={currentPage === 1}
+                        className={"btn btn-neutral join-item"}
+                        onClick={() => setCurrentPage(1)}
+                    >
+                        <FontAwesomeIcon icon={fas.faAnglesLeft}/>
+                    </button>
+                    <button
+                        disabled={currentPage === 1}
+                        className={"btn btn-neutral join-item"}
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                    >
+                        <FontAwesomeIcon icon={fas.faChevronLeft}/>
+                    </button>
+
+                    <button
+                        className={"btn btn-neutral join-item"}
+                        disabled={currentPage * countRowsPage > (grouped ? data[selectedGroup as string]?.length || 0 : data.length)}
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                    >
+                        <FontAwesomeIcon icon={fas.faChevronRight}/>
+                    </button>
+
+                    <button
+                        className={"btn btn-neutral join-item"}
+                        disabled={currentPage * countRowsPage > (grouped ? data[selectedGroup as string]?.length || 0 : data.length)}
+                        onClick={() => setCurrentPage(Math.ceil((grouped ? data[selectedGroup as string]?.length || 0 : data.length) / countRowsPage))}
+                    >
+                        <FontAwesomeIcon icon={fas.faAnglesRight}/>
+                    </button>
                 </div>
                 <div>
                     <div
@@ -464,7 +591,7 @@ const TableRow = memo<TableRowProps>(({
     return (
         <tr>
             <td
-            className={"flex flex-row gap-2 items-center h-full"}
+                className={"flex flex-row gap-2 items-center h-full"}
             >
                 {
                     allowDelete && <button
@@ -602,5 +729,6 @@ const TableRow = memo<TableRowProps>(({
 });
 
 TableRow.displayName = 'TableRow';
+
 
 export default EditableTable;

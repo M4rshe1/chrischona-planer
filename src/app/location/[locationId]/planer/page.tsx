@@ -139,7 +139,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "id",
             label: "ID",
-            type: "hidden",
+            type: "text",
             toggle: false,
             disabled: true
         },
@@ -453,7 +453,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             await prisma.$disconnect()
         }
 
-        return revalidatePath(`/location/${locationId}/planer`)
+        revalidatePath(`/location/${locationId}/planer`)
     }
 
     async function createHandler(dontRemove: any) {
@@ -477,7 +477,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             await prisma.$disconnect()
         }
 
-        return revalidatePath(`/location/${locationId}/planer`)
+        revalidatePath(`/location/${locationId}/planer`)
     }
 
 

@@ -64,7 +64,6 @@ export const SelectInput = ({options, row, handler, value, isDisabled, name}: {
     isDisabled: boolean,
     name: string
 }) => {
-    console.log(row, value, name, isDisabled)
     return (
         <Select
             instanceId={row.toString()}
@@ -131,7 +130,6 @@ export const CheckboxInput = ({value, handler, row, isDisabled, name}: {
     isDisabled: boolean,
     name: string
 }) => {
-    value ? console.log("true") : console.log("false")
     return (
         value ?
         <input

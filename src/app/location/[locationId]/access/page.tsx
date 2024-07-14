@@ -3,9 +3,8 @@ import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, RelationRoleLocation} from "@prisma/client";
+import {PrismaClient} from "@prisma/client";
 import {revalidatePath} from "next/cache";
-import CustomTable from "@/components/customTable";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
 import EditableTable from "@/components/editableTable";
@@ -55,7 +54,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "id",
             label: "ID",
-            type: "hidden",
+            type: "text",
             toggle: false,
             disabled: true
         },
@@ -118,7 +117,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             await prisma.$disconnect()
         }
 
-        return revalidatePath(`/location/${locationId}/access`)
+        revalidatePath(`/location/${locationId}/access`)
     }
 
     async function handleDelete(item: any) {
@@ -178,25 +177,25 @@ const page = async ({params}: { params: { locationId: string } }) => {
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
             <Suspense fallback={<Loading/>}>
-            <main
-                className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
-            >
+                <main
+                    className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
+                >
 
-                <EditableTable data={accessCodes}
-                               saveHandler={handleSave}
-                               createHandler={handleCreate}
-                               deleteHandler={handleDelete}
-                               columns={columns}
-                               allowEdit={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
-                               allowCreate={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
-                               allowDelete={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
-                               allowFullscreen={true}
-                               allowExport={false}
-                               tableName={"Zugangscodes"}
-                />
+                    <EditableTable data={accessCodes}
+                                   saveHandler={handleSave}
+                                   createHandler={handleCreate}
+                                   deleteHandler={handleDelete}
+                                   columns={columns}
+                                   allowEdit={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
+                                   allowCreate={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
+                                   allowDelete={(["MANAGER", "OWNER"].includes(user_location_role) || session.user.role === "ADMIN")}
+                                   allowFullscreen={true}
+                                   allowExport={false}
+                                   tableName={"Zugangscodes"}
+                    />
 
 
-            </main>
+                </main>
             </Suspense>
         </LocationLayout>
     )

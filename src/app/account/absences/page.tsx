@@ -4,7 +4,7 @@ import {getServerSession} from "next-auth";
 import {redirect} from "next/navigation";
 import {PrismaClient} from "@prisma/client";
 import {revalidatePath} from "next/cache";
-import CustomTable from "@/components/customTable";
+import EditableTable from "@/components/editableTable";
 
 
 const prisma = new PrismaClient()
@@ -33,7 +33,7 @@ const page = async () => {
         {
             name: "id",
             label: "ID",
-            type: "hidden",
+            type: "text",
             toggle: false,
             disabled: true
         },
@@ -60,63 +60,23 @@ const page = async () => {
         },
     ]
 
-    async function handleSave(formData: FormData) {
+    async function handleSave(values: any, item: any, name: string) {
         "use server"
-        const session: UserSession | null = await getServerSession(authOptions)
-        if (session === null) {
-            redirect("/auth/login")
-        }
-
         const prisma = new PrismaClient()
-        let dateFromForm = formData.get("dateFrom") as string
-        let dateToForm = formData.get("dateTo") as string
-        let dateFrom
-        let dateTo
-        if (!dateFromForm) {
-            dateFrom = new Date().toISOString()
-        } else {
-            dateFrom = new Date(dateFromForm).toISOString()
-        }
 
-        if (!dateToForm) {
-            dateTo = new Date().toISOString()
-        } else {
-            dateTo = new Date(dateToForm).toISOString()
-        }
-
-        if (!formData.get("id")) {
-            try {
-                await prisma.abwesenheit.create({
-                    data: {
-                        userId: session.user.id,
-                        dateFrom: dateFrom,
-                        dateTo: dateTo,
-                        reason: formData.get("reason") as string
-                    }
-                })
-            } catch (e) {
-                console.error(e)
-            } finally {
-                await prisma.$disconnect()
-            }
-        } else {
-            try {
-                await prisma.abwesenheit.update({
-                    where: {
-                        id: formData.get("id") as string
-                    },
-                    data: {
-                        dateFrom: dateFrom,
-                        dateTo: dateTo,
-                        reason: formData.get("reason") as string
+        try {
+            await prisma.abwesenheit.update({
+                where: {
+                    id: item.id
+                },
+                data: {
+                    [name]: values
                 }
             })
-            } catch (e) {
-                console.error(e)
-            } finally {
-                await prisma.$disconnect()
-            }
+        } catch (e) {
+            console.error(e)
         }
+
         return revalidatePath(`/account/absences`)
     }
 
@@ -133,6 +93,31 @@ const page = async () => {
             console.error(e)
         } finally {
             await prisma.$disconnect()
+        }
+        return revalidatePath(`/account/absences`)
+    }
+
+    async function handleCreate() {
+        "use server"
+        const session: UserSession | null = await getServerSession(authOptions)
+        if (!session) {
+            redirect("/auth/login")
+        }
+        const prisma = new PrismaClient()
+
+        try {
+            await prisma.abwesenheit.create({
+                data: {
+                    userId: session.user.id,
+                    dateFrom: new Date(),
+                    dateTo: new Date(),
+                    reason: ""
+                }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            prisma.$disconnect()
         }
         return revalidatePath(`/account/absences`)
     }
@@ -157,10 +142,6 @@ const page = async () => {
         groupedAbsences = {}
     }
 
-
-    const dropdown = Object.keys(groupedAbsences)
-
-
     return (
 
         <main
@@ -173,17 +154,11 @@ const page = async () => {
                     Abwesenheiten
                 </h1>
             </div>
-
-
-            <CustomTable columns={columns} data={groupedAbsences} dropdown={dropdown} tableName={'user_absences'}
-                         addButton={true}
-                         editButton={true}
-                         deleteButton={true}
-                         handleDelete={handleDelete}
-                         handleSave={handleSave}
-                         selectMenu={true}
-                         fullscreenButton={true}
-            />
+            <EditableTable
+                grouped={true}
+                data={groupedAbsences} saveHandler={handleSave} createHandler={handleCreate}
+                deleteHandler={handleDelete} columns={columns} allowEdit={true} allowCreate={true}
+                allowDelete={true} allowFullscreen={true} tableName={'user_absences'} allowExport={false}/>
         </main>
     )
 }

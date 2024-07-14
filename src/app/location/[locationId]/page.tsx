@@ -7,6 +7,7 @@ import {notFound, redirect} from "next/navigation";
 import LocationLayout from "@/components/locationLayout";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
+import Donut from "@/components/ui/charts/donut";
 
 
 const LocationPage = async ({params}: { params: { locationId: string } }) => {
@@ -19,6 +20,7 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
     const locationId = params.locationId;
     let location = null;
     let openRequests = null;
+    let teams = null;
     try {
         location = await prisma.location.findUnique({
             where: {
@@ -45,6 +47,18 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
         })
         openRequests = openRequests ? openRequests : {_count: {status: 0}}
 
+        teams = await prisma.team.findMany({
+            where: {
+                locationId: locationId
+            },
+            include: {
+                users: {
+                    include: {
+                        user: true
+                    }
+                }
+            }
+        })
     } catch (e) {
         console.error(e)
     } finally {
@@ -54,6 +68,35 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
     if (!location) {
         return notFound()
     }
+
+    // group by user relation
+    // count by relation
+
+    const groupByRelation = location.Users.reduce((acc, user) => {
+        // @ts-ignore
+        if (!acc[user.relation]) {
+            // @ts-ignore
+            acc[user.relation] = 0
+        }
+        // @ts-ignore
+        acc[user.relation] += 1
+        return acc
+    }, {})
+
+    const dataLocationMembers = Object.entries(groupByRelation).map(([name, value]) => {
+        return {
+            name,
+            value
+        }
+    // @ts-ignore
+    }).sort((a, b) => b.value - a.value)
+
+    const dataLocationTeams = teams?.map((team) => {
+        return {
+            name: team.name,
+            value: team.users.length
+        }
+    }).sort((a, b) => b.value - a.value) ?? []
 
 
     const user_location_role = location.Users.find((user) => user.userId as string == session.user.id as string)?.relation ?? "VIEWER"
@@ -77,16 +120,6 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
                             className={"font-bold text-lg"}
                         >{location.name}</p>
                     </div>
-                    <Link
-                        href={`/location/${locationId}/team`}
-                    >
-                        <p
-                            className={"text-sm"}
-                        >Team Mitglieder <FontAwesomeIcon icon={fas.faUpRightFromSquare}/></p>
-                        <p
-                            className={"font-bold text-lg"}
-                        >{location.Users.filter((user) => user.relation !== "VIEWER").length}</p>
-                    </Link>
                     <div>
                         <p
                             className={"text-sm"}
@@ -110,6 +143,26 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
                         >
                             {openRequests?._count?.status}
                         </p>
+                    </Link>
+                </div>
+                <div
+                    className="flex justify-center items-center bg-base-200 rounded-box p-4 border-neutral border-2 hover:shadow-lg h-full gap-2 relative"
+                >
+                    <Donut data={dataLocationMembers} title={"Personen an diesem Standort"}/>
+                    <Link href={`/location/${locationId}/team`}
+                          className={"absolute top-3 right-4"}
+                    >
+                        <FontAwesomeIcon icon={fas.faUpRightFromSquare}/>
+                    </Link>
+                </div>
+                <div
+                    className="flex justify-center items-center bg-base-200 rounded-box p-4 border-neutral border-2 hover:shadow-lg h-full gap-2 relative"
+                >
+                    <Donut data={dataLocationTeams} title={"Teams an diesem Standort"}/>
+                    <Link href={`/location/${locationId}/teams`}
+                          className={"absolute top-3 right-4"}
+                    >
+                        <FontAwesomeIcon icon={fas.faUpRightFromSquare}/>
                     </Link>
                 </div>
             </main>

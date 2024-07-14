@@ -14,6 +14,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@prisma/client": "^5.16.2",
+    "ag-charts-react": "^10.0.2",
     "aws-sdk": "^2.1654.0",
     "bcrypt": "^5.1.1",
     "lucide-react": "^0.408.0",

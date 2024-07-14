@@ -6,7 +6,6 @@ import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation, Status} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import {fas} from "@fortawesome/free-solid-svg-icons";
-import CustomTable from "@/components/customTable";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
 import EditableTable from "@/components/editableTable";
@@ -75,7 +74,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "id",
             label: "ID",
-            type: "hidden",
+            type: "text",
             toggle: false,
             disabled: true
         },

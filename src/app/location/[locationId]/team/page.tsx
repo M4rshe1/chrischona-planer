@@ -75,7 +75,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         {
             name: "id",
             label: "ID",
-            type: "hidden",
+            type: "text",
             toggle: false,
             disabled: true
         },
