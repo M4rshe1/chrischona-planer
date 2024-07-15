@@ -4,7 +4,7 @@ import {useState} from "react";
 import {AgCharts} from "ag-charts-react";
 import {AgChartOptions} from "ag-charts-types";
 
-const ChartExample = ({data, title}: { data: any[], title: string }) => {
+const Donut = ({data, title}: { data: any[], title: string }) => {
     const [options, setOptions] = useState({
         data: data,
         theme: 'ag-polychroma',
@@ -21,24 +21,21 @@ const ChartExample = ({data, title}: { data: any[], title: string }) => {
                 calloutLabelKey: "name",
                 angleKey: "value",
                 innerRadiusRatio: .6,
-                formatter: {
-                    text: '[bold]${value}[/]',
-                },
-                innerLabels: [
-                    {
-                        text: "Total Investment",
-                        fontWeight: "bold",
-                        enabled: true,
-                        color: "white",
-                    },
-                    {
-                        text: "$100,000",
-                        spacing: 4,
-                        fontSize: 48,
-                        color: "green",
-                        enabled: true,
-                    },
-                ],
+                // innerLabels: [
+                //     {
+                //         text: "Total Investment",
+                //         fontWeight: "bold",
+                //         enabled: true,
+                //         color: "white",
+                //     },
+                //     {
+                //         text: "$100,000",
+                //         spacing: 4,
+                //         fontSize: 48,
+                //         color: "green",
+                //         enabled: true,
+                //     },
+                // ],
                 label: {
                     value: {
                         format: '[font-weight=bold]${value}[/]',
@@ -60,4 +57,4 @@ const ChartExample = ({data, title}: { data: any[], title: string }) => {
         options={options as AgChartOptions}/>;
 };
 
-export default ChartExample;
+export default Donut;

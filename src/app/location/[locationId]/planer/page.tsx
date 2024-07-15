@@ -342,6 +342,13 @@ const page = async ({params}: { params: { locationId: string } }) => {
             toggle: true,
             disabled: false
         },
+        {
+            name: "besucher",
+            label: "Besucher",
+            type: "number",
+            toggle: true,
+            disabled: false
+        },
     ]
 
     async function handleSave(value: any, row: any, name: string) {
@@ -509,7 +516,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
                                    tableName={"planer"}
                                    createHandler={createHandler}
                     />
-
                 </main>
             </Suspense>
         </LocationLayout>

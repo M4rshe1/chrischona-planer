@@ -83,10 +83,10 @@ const TeamForm = ({handleDelete, handleAdd, team, users, showForm = false, showD
                             onChange={handleChange}
                             options={options}
                             isSearchable
+                            escapeClearsValue={true}
                             isClearable={true}
                             placeholder="Suchen..."
                             styles={{
-
                                 control: (provided) => ({
                                     ...provided,
                                     border: '1px solid var(--fallback-n,oklch(var(--n)/var(--tw-border-opacity)))',

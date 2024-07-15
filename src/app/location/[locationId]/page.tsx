@@ -8,6 +8,7 @@ import LocationLayout from "@/components/locationLayout";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import Donut from "@/components/ui/charts/donut";
+import Line from "@/components/ui/charts/line";
 
 
 const LocationPage = async ({params}: { params: { locationId: string } }) => {
@@ -21,6 +22,7 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
     let location = null;
     let openRequests = null;
     let teams = null;
+    let gottesdienste = null;
     try {
         location = await prisma.location.findUnique({
             where: {
@@ -59,6 +61,20 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
                 }
             }
         })
+
+        gottesdienste = await prisma.gottesdienst.findMany({
+            where: {
+                locationId: locationId
+            },
+            select: {
+                dateFrom: true,
+                besucher: true,
+            }, orderBy: {
+                dateFrom: 'asc'
+            },
+            take: 50
+        })
+
     } catch (e) {
         console.error(e)
     } finally {
@@ -98,6 +114,26 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
         }
     }).sort((a, b) => b.value - a.value) ?? []
 
+    const dataGottesdienste = gottesdienste?.map((gottesdienst) => {
+        return {
+            name: gottesdienst.dateFrom.toLocaleDateString("de-CH", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",}),
+            value: gottesdienst.besucher
+        }
+    }) ?? []
+
+    const seriesGottesdientste = [
+        {
+            type: "line",
+            yKey: "value",
+            xKey: "name",
+            yName: "Besucher",
+            interpolation: { type: "smooth" },
+            connectMissingData: true,
+        },
+    ]
 
     const user_location_role = location.Users.find((user) => user.userId as string == session.user.id as string)?.relation ?? "VIEWER"
     return (
@@ -160,6 +196,16 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
                 >
                     <Donut data={dataLocationTeams} title={"Teams an diesem Standort"}/>
                     <Link href={`/location/${locationId}/teams`}
+                          className={"absolute top-3 right-4"}
+                    >
+                        <FontAwesomeIcon icon={fas.faUpRightFromSquare}/>
+                    </Link>
+                </div>
+                <div
+                    className="flex justify-center items-center bg-base-200 rounded-box p-4 border-neutral border-2 hover:shadow-lg h-full gap-2 relative"
+                >
+                    <Line data={dataGottesdienste} series={seriesGottesdientste} title={"Besucherzahlen"} />
+                    <Link href={`/location/${locationId}/planer`}
                           className={"absolute top-3 right-4"}
                     >
                         <FontAwesomeIcon icon={fas.faUpRightFromSquare}/>
