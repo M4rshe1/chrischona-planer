@@ -160,7 +160,7 @@ export const TextareaInput = ({value, handler, row, isDisabled, name}: {
             defaultValue={value}
             onBlur={(e) => handler(e.target.value, row, name)}
             disabled={isDisabled}
-            className={"textarea textarea-bordered textarea-sm"}
+            className={"textarea textarea-bordered textarea-sm w-[300px] h-24"}
         />
     )
 }

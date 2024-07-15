@@ -395,57 +395,64 @@ const EditableTable = ({
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        {
-                            ((allowDelete || rowActions) && allowFilter) && <td
-                                className={"flex gap-2 items-center h-full flex-nowrap"}
-                            >
-                                {
-                                    allowDelete && <button
-                                        className={"btn btn-sm btn-neutral tooltip pointer-events-none opacity-0"}
-                                    >
-                                        <FontAwesomeIcon icon={fas.faTrash}/>
-                                    </button>
-                                }
-                                {
-                                    rowActions?.map((action: any, index: number) => {
-                                        return (
-                                            <button
-                                                key={index}
+                    {
+                        allowFilter &&
+                        <tr>
+                            {
+                                (allowDelete || rowActions) && <td
+                                    className={"flex gap-2 items-center h-full flex-nowrap"}
+                                >
+                                    <div>
+
+                                        {
+                                            allowDelete && <button
                                                 className={"btn btn-sm btn-neutral tooltip pointer-events-none opacity-0"}
                                             >
-                                                <FontAwesomeIcon icon={action.icon}/>
+                                                <FontAwesomeIcon icon={fas.faTrash}/>
                                             </button>
-                                        )
-                                    })
-                                }
-                            </td>
-                        }
-                        {
-                            allowFilter &&
-                            filter.map((filterItem, index) => {
-                                if (selectedColumns.find((column) => column.name === filterItem.name)?.toggle === false) {
-                                    return;
-                                }
+                                        }
+                                        {
+                                            rowActions?.map((action: any, index: number) => {
+                                                return (
+                                                    <button
+                                                        key={index}
+                                                        className={"btn btn-sm btn-neutral tooltip pointer-events-none opacity-0"}
+                                                    >
+                                                        <FontAwesomeIcon icon={action.icon}/>
+                                                    </button>
+                                                )
+                                            })
+                                        }
+                                    </div>
+                                </td>
+                            }
+                            {
 
-                                return (
-                                    <td
-                                        key={index}
-                                    >
-                                        <input
-                                            type={"text"}
-                                            defaultValue={filterItem.value}
-                                            onChange={(e) => {
-                                                changeFilterValue(e, filterItem)
-                                            }}
-                                            placeholder={filterItem.label}
-                                            className={"input input-sm input-bordered"}
-                                        />
-                                    </td>
-                                )
-                            })
-                        }
-                    </tr>
+                                filter.map((filterItem, index) => {
+                                    if (selectedColumns.find((column) => column.name === filterItem.name)?.toggle === false) {
+                                        return;
+                                    }
+
+                                    return (
+                                        <td
+                                            key={index}
+                                        >
+                                            <input
+                                                type={"text"}
+                                                defaultValue={filterItem.value}
+                                                onChange={(e) => {
+                                                    changeFilterValue(e, filterItem)
+                                                }}
+                                                placeholder={filterItem.label}
+                                                className={"input input-sm input-bordered"}
+                                            />
+                                        </td>
+                                    )
+                                })
+                            }
+                        </tr>
+                    }
+
                     {
                         rows.length === 0 &&
                         <tr>
@@ -590,34 +597,37 @@ const TableRow = memo<TableRowProps>(({
                                       }) => {
     return (
         <tr>
-            <td
-                className={"flex flex-row gap-2 items-center h-full"}
-            >
-                {
-                    allowDelete && <button
-                        className={"btn btn-sm btn-neutral hover:bg-error hover:text-white tooltip"}
-                        data-tip={"Löschen"}
-                        // @ts-ignore
-                        onClick={() => deleteHandler(row)}
-                    >
-                        <FontAwesomeIcon icon={fas.faTrash}/>
-                    </button>
-                }
-                {
-                    rowActions && rowActions.map((action: any, index: number) => {
-                        return (
-                            <button
-                                key={index}
-                                className={"btn btn-sm btn-neutral tooltip " + action.style}
-                                data-tip={action.tooltip}
-                                // @ts-ignore
-                                onClick={() => action.handler(row)}
-                            >
-                                <FontAwesomeIcon icon={action.icon}/>
-                            </button>
-                        )
-                    })
-                }
+            <td>
+                <div
+                    className={"flex flex-row gap-2 items-center h-full"}
+                >
+
+                    {
+                        allowDelete && <button
+                            className={"btn btn-sm btn-neutral hover:bg-error hover:text-white tooltip"}
+                            data-tip={"Löschen"}
+                            // @ts-ignore
+                            onClick={() => deleteHandler(row)}
+                        >
+                            <FontAwesomeIcon icon={fas.faTrash}/>
+                        </button>
+                    }
+                    {
+                        rowActions && rowActions.map((action: any, index: number) => {
+                            return (
+                                <button
+                                    key={index}
+                                    className={"btn btn-sm btn-neutral tooltip " + action.style}
+                                    data-tip={action.tooltip}
+                                    // @ts-ignore
+                                    onClick={() => action.handler(row)}
+                                >
+                                    <FontAwesomeIcon icon={action.icon}/>
+                                </button>
+                            )
+                        })
+                    }
+                </div>
             </td>
             {
 

@@ -4,8 +4,6 @@ import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
 import {PrismaClient, RelationRoleLocation} from "@prisma/client";
-import Loading from "@/app/loading";
-import {Suspense} from "react";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import EditableTable from "@/components/editableTable";
 import {revalidatePath} from "next/cache";
@@ -152,14 +150,15 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
             })
             const latestTime = latest[0]?.timeFrom
             const latestDuration = latest[0]?.durationMin
-            let newTimeString = "09:00"
+            let newTimeString = "09:45"
             if (latestTime && latestDuration) {
                 const newTime = new Date()
                 newTime.setHours(parseInt(latestTime.split(":")[0]))
                 newTime.setMinutes(parseInt(latestTime.split(":")[1]) + latestDuration)
-                newTimeString = `${newTime.getHours()}:${newTime.getMinutes()}`
+                const hours = newTime.getHours().toString().padStart(2, '0');
+                const minutes = newTime.getMinutes().toString().padStart(2, '0');
+                newTimeString = `${hours}:${minutes}`;
             }
-            console.log(newTimeString)
             if (newTimeString.length < 5) newTimeString = "0" + newTimeString
 
             await prisma.zeitplan.create({
@@ -189,25 +188,24 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
     return (
         <LocationLayout location={location} locationId={locationId} session={session}
                         user_location_role={user_location_role}>
-            <Suspense fallback={<Loading/>}>
-                <main
-                    className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
-                >
-                    <EditableTable data={sections}
-                                   saveHandler={handleSave}
-                                   createHandler={handleCreate}
-                                   deleteHandler={handleDelete}
-                                   columns={columns}
-                                   allowEdit={user_location_role != RelationRoleLocation.VIEWER}
-                                   allowCreate={user_location_role != RelationRoleLocation.VIEWER}
-                                   allowDelete={user_location_role != RelationRoleLocation.VIEWER}
-                                   allowFullscreen={true}
-                                   allowExport={false}
-                                   tableName={"Zeitplan"}
-                                   headerActions={headerActions}
-                    />
-                </main>
-            </Suspense>
+            <main
+                className={"p-4 flex flex-col justify-start items-center h-full gap-4 w-full"}
+            >
+                <EditableTable data={sections}
+                               saveHandler={handleSave}
+                               createHandler={handleCreate}
+                               deleteHandler={handleDelete}
+                               columns={columns}
+                               allowEdit={user_location_role != RelationRoleLocation.VIEWER}
+                               allowCreate={user_location_role != RelationRoleLocation.VIEWER}
+                               allowDelete={user_location_role != RelationRoleLocation.VIEWER}
+                               allowFullscreen={true}
+                               allowExport={false}
+                               tableName={"Zeitplan"}
+                               headerActions={headerActions}
+                               allowFilter={false}
+                />
+            </main>
         </LocationLayout>
     )
 }

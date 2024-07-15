@@ -7,3 +7,8 @@ pre {
     line-height: 1;
 }
 
+textarea {
+    resize: both;
+    line-height: 1.2 !important;
+}
+
