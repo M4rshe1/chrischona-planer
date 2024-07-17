@@ -511,7 +511,7 @@ const EditableTable = ({
 
                     <button
                         className={"btn btn-neutral join-item"}
-                        disabled={currentPage * countRowsPage > (grouped ? data[selectedGroup as string]?.length || 0 : data.length)}
+                        disabled={currentPage * countRowsPage > (grouped ? data[selectedGroup as string]?.length - 1 || 0 : data.length - 1)}
                         onClick={() => setCurrentPage(currentPage + 1)}
                     >
                         <FontAwesomeIcon icon={fas.faChevronRight}/>
@@ -519,8 +519,8 @@ const EditableTable = ({
 
                     <button
                         className={"btn btn-neutral join-item"}
-                        disabled={currentPage * countRowsPage > (grouped ? data[selectedGroup as string]?.length || 0 : data.length)}
-                        onClick={() => setCurrentPage(Math.ceil((grouped ? data[selectedGroup as string]?.length || 0 : data.length) / countRowsPage))}
+                        disabled={currentPage * countRowsPage > (grouped ? data[selectedGroup as string]?.length - 1 || 0 : data.length - 1)}
+                        onClick={() => setCurrentPage(Math.ceil((grouped ? data[selectedGroup as string]?.length - 1 || 0 : data.length - 1) / countRowsPage))}
                     >
                         <FontAwesomeIcon icon={fas.faAnglesRight}/>
                     </button>

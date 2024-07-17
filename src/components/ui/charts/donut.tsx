@@ -1,11 +1,10 @@
 "use client"
 
-import {useState} from "react";
 import {AgCharts} from "ag-charts-react";
 import {AgChartOptions} from "ag-charts-types";
 
 const Donut = ({data, title}: { data: any[], title: string }) => {
-    const [options, setOptions] = useState({
+    const options = {
         data: data,
         theme: 'ag-polychroma',
         title: {
@@ -36,12 +35,6 @@ const Donut = ({data, title}: { data: any[], title: string }) => {
                 //         enabled: true,
                 //     },
                 // ],
-                label: {
-                    value: {
-                        format: '[font-weight=bold]${value}[/]',
-                    },
-                    color: "#7e848f",
-                },
                 calloutLabel: {
                     color: "#7e848f",
                 }
@@ -50,8 +43,8 @@ const Donut = ({data, title}: { data: any[], title: string }) => {
         legend: {
             enabled: false,
         },
-    });
 
+    };
     return <AgCharts
         className="w-full h-full"
         options={options as AgChartOptions}/>;

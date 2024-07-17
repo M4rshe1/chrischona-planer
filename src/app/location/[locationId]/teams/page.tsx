@@ -55,6 +55,8 @@ const page = async ({params}: { params: { locationId: string } }) => {
             },
         })
 
+        console.log(Teams)
+
         users = await prisma.user.findMany({
             where: {
                 locations: {

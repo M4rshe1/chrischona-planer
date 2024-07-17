@@ -4,8 +4,8 @@ import React, {useState} from "react";
 import {AgCharts} from "ag-charts-react";
 import {AgChartOptions} from "ag-charts-community";
 
-const Line = ({data, title, series}: { data: any[], title: string, series: any[] }) => {
-    const [options, setOptions] = useState<AgChartOptions>({
+const Line = ({data, title, series, axis}: { data: any[], title: string, series: any[], axis: any[] }) => {
+    return <AgCharts options={{
         data: data,
         theme: 'ag-polychroma',
         title: {
@@ -16,11 +16,10 @@ const Line = ({data, title, series}: { data: any[], title: string, series: any[]
             fill: "transparent",
         },
         series: series,
-        width: "100%",
-        height: "100%",
-    });
-
-    return <AgCharts options={options}/>;
+        width: 0,
+        height: 0,
+        axes: axis,
+    }}/>;
 };
 
 export default Line;

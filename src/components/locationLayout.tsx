@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import {UserSession} from "@/lib/types";
 import {RelationRoleLocation} from "@prisma/client";
 import {usePathname} from "next/navigation";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useState} from "react";
+import DashboardLink from "@/components/dashboardLink";
 
 
 const LocationLayout = ({children, location, locationId, session, user_location_role}: {
@@ -17,7 +17,6 @@ const LocationLayout = ({children, location, locationId, session, user_location_
     user_location_role: RelationRoleLocation
 }) => {
     const [expanded, setExpanded] = useState(true);
-    const current_path = usePathname();
     useEffect(() => {
         // Check if running in the browser (where `window` exists)
         if (typeof window !== 'undefined') {
@@ -76,108 +75,58 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                 }
                             </div>
                         </li>
-                        <li
-                            className={"tooltip tooltip-right"}
-                            data-tip="Dashboard des Standorts"
-                        ><Link
-                            href={`/location/${locationId}`}
-                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith(locationId) ? "active" : "")}
-                        >
-                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faHome}/>
-                            <div
-                                className={"ml-2 " + (expanded ? "block" : "hidden")}
-                            >
-                                Dashboard
-                            </div>
-                        </Link></li>
-                        <li
-                            className={"tooltip tooltip-right"}
-                            data-tip="Gottesdienste und Events verwalten"
-                        ><Link
-                            href={`/location/${locationId}/planer`}
-                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/planer") ? "active" : "")}
-                        >
-                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faCalendarAlt}/>
-                            <div
-                                className={"ml-2 " + (expanded ? "block" : "hidden")}
-                            >
-                                Planer
-                            </div>
-                        </Link></li>
-                        <li
-                            className={"tooltip tooltip-right"}
-                            data-tip="Teams verwalten"
-                        ><Link
-                            href={`/location/${locationId}/teams`}
-                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/teams") ? "active" : "")}
-                        >
-                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faUsersRectangle}/>
-                            <div
-                                className={"ml-2 " + (expanded ? "block" : "hidden")}
-                            >
-                                Teams
-                            </div>
-                        </Link></li>
-                        <li
-                            className={"tooltip tooltip-right"}
-                            data-tip="Das Team des Standorts"
-                        ><Link
-                            href={`/location/${locationId}/team`}
-                            className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/team") ? "active" : "")}
-                        >
-                            <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faUsers}/>
-                            <div
-                                className={"ml-2 " + (expanded ? "block" : "hidden")}
-                            >
-                                Team
-                            </div>
-                        </Link></li>
+                        <DashboardLink
+                            link={`/location/${locationId}`}
+                            expanded={expanded}
+                            text={"Dashboard"}
+                            tooltip={"Dashboard des Standorts"}
+                            icon={fas.faHome}
+                        />
+                        <DashboardLink
+                            link={`/location/${locationId}/planer`}
+                            expanded={expanded}
+                            text={"Planer"}
+                            tooltip={"Gottesdienste und Events verwalten"}
+                            icon={fas.faCalendarAlt}
+                        />
+                        <DashboardLink
+                            link={`/location/${locationId}/teams`}
+                            expanded={expanded}
+                            text={"Teams"}
+                            tooltip={"Teams verwalten"}
+                            icon={fas.faUsersRectangle}
+                        />
+                        <DashboardLink
+                            link={`/location/${locationId}/team`}
+                            expanded={expanded}
+                            text={"Team"}
+                            tooltip={"Das Team des Standorts"}
+                            icon={fas.faUsers}
+                        />
                         {
                             (["OWNER", "MANAGER"].includes(user_location_role as string) || session.user.role === "ADMIN") &&
                             <>
-                                <li
-                                    className={"tooltip tooltip-right"}
-                                    data-tip="Zugriffslinks und Codes verwalten"
-                                ><Link
-                                    href={`/location/${locationId}/access`}
-                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/access") ? "active" : "")}
-                                >
-                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faKey}/>
-                                    <div
-                                        className={"ml-2 " + (expanded ? "block" : "hidden")}
-                                    >
-                                        Zugriff & Codes
-                                    </div>
-                                </Link>
-                                </li>
-                                <li
-                                    className={"tooltip tooltip-right"}
-                                    data-tip="Zugriffsanfragen verwalten"
-                                ><Link
-                                    href={`/location/${locationId}/requests`}
-                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/requests") ? "active" : "")}
-                                >
-                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faEnvelope}/>
-                                    <div
-                                        className={"ml-2 " + (expanded ? "block" : "hidden")}
-                                    >
-                                        Anfragen
-                                    </div>
-                                </Link></li>
-                                <li
-                                    className={"tooltip tooltip-right"}
-                                    data-tip="Änderungen im großen Stil"
-                                ><Link
-                                    href={`/location/${locationId}/bulk-actions`}
-                                    className={"font-semibold flex item-center " + (expanded ? "aspect-auto justify-start " : "aspect-square justify-center ") + (current_path?.endsWith("/bulk-actions") ? "active" : "")}
-                                >
-                                    <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faTools}/>
-                                    <div
-                                        className={"ml-2 " + (expanded ? "block" : "hidden")}
-                                    >
-                                        Bulk Actions
-                                    </div>
-                                </Link></li>
+                                <DashboardLink
+                                    link={`/location/${locationId}/requests`}
+                                    expanded={expanded}
+                                    text={"Anfragen"}
+                                    tooltip={"Zugriffsanfragen verwalten"}
+                                    icon={fas.faEnvelope}
+                                />
+                                <DashboardLink
+                                    link={`/location/${locationId}/requests`}
+                                    expanded={expanded}
+                                    text={"Anfragen"}
+                                    tooltip={"Zugriffsanfragen verwalten"}
+                                    icon={fas.faEnvelope}
+                                />
+                                <DashboardLink
+                                    link={`/location/${locationId}/bulk-actions`}
+                                    expanded={expanded}
+                                    text={"Bulk Actions"}
+                                    tooltip={"Änderungen im großen Stil"}
+                                    icon={fas.faTools}
+                                />
                             </>
                         }
                     </ul>
