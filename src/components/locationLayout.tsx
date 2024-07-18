@@ -2,7 +2,6 @@
 
 import {UserSession} from "@/lib/types";
 import {RelationRoleLocation} from "@prisma/client";
-import {usePathname} from "next/navigation";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useState} from "react";
@@ -114,11 +113,11 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                     icon={fas.faEnvelope}
                                 />
                                 <DashboardLink
-                                    link={`/location/${locationId}/requests`}
+                                    link={`/location/${locationId}/access`}
                                     expanded={expanded}
-                                    text={"Anfragen"}
-                                    tooltip={"Zugriffsanfragen verwalten"}
-                                    icon={fas.faEnvelope}
+                                    text={"Zugriffscodes und Links"}
+                                    tooltip={"Zugriffscodes und Links verwalten"}
+                                    icon={fas.faKey}
                                 />
                                 <DashboardLink
                                     link={`/location/${locationId}/bulk-actions`}

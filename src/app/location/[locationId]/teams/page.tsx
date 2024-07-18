@@ -55,8 +55,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
             },
         })
 
-        console.log(Teams)
-
         users = await prisma.user.findMany({
             where: {
                 locations: {
@@ -99,6 +97,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
     async function handleAdd(userId: string, teamId: string) {
         "use server"
+        console.log(userId, teamId)
         const prisma = new PrismaClient()
         try {
             await prisma.team_user.create({

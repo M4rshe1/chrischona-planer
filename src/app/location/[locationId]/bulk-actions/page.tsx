@@ -93,6 +93,87 @@ const page = async ({params}: { params: { locationId: string } }) => {
         }
 
         const prisma = new PrismaClient()
+        try {
+            let teams = await prisma.team.findMany({
+                where: {
+                    locationId: locationId
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    users: {
+                        select: {
+                            user: {
+                                select: {
+                                    id: true,
+                                    name: true
+                                }
+                            },
+                            id: true
+                        }
+                    }
+                },
+            }).then((teams) => {
+                return teams.map((team) => {
+                    return {
+                        id: team.id,
+                        name: team.name,
+                        users: team.users.map((user) => {
+                            return user.user.id
+                        })
+                    }
+                })
+            })
+
+            const teamFilters = [
+                {key: "technik_bild", name: "TECHNIK_BILD", exclude: technik_exclude},
+                {key: "technik_ton", name: "TECHNIK_TON", exclude: technik_ton_exclude},
+                {key: "kindertreff", name: "KINDERTREFF", exclude: kindertreff_exclude},
+                {key: "kinderhute", name: "KINDERHUTE", exclude: kinderhute_exclude},
+                {key: "moderator", name: "MODERATOR", exclude: moderator_exclude},
+            ];
+
+            teams = teams.map((team) => {
+                // @ts-ignore
+                const filter = teamFilters.find(f => f.name === team.name);
+                return filter ? {...team, users: team.users.filter(user => !filter.exclude.includes(user))} : team;
+            });
+
+            dates.map(async (date: Date, index: number) => {
+                const isFirstSundayOfMonth = date.getDate() <= 7
+
+                const gottesdienst = await prisma.gottesdienst.findMany({
+                    where: {
+                        dateFrom: {
+                            equals: date
+                        },
+                    }
+                })
+                // if (!gottesdienst) {
+                //     prisma.gottesdienst.create({
+                //         data: {
+                //             locationId: locationId,
+                //             dateFrom: date,
+                //             dateUntill: date,
+                //             anlass: "Gottesdienst",
+                //             abendmahl: (isFirstSundayOfMonth && abendmahl) ?? false,
+                //             Gottesdienst_User: {
+                //                 create: teams.map((team) => {
+                //                     return {
+                //                         teamId: team.id,
+                //                         userId: team.users[index % team.users.length],
+                //                     }
+                //                 })
+                //             }
+                //         }
+                //     })
+                // }
+            })
+        } catch (e) {
+            console.error(e)
+        } finally {
+            await prisma.$disconnect()
+        }
     }
 
     const user_location_role = location.Users.find((user) => user.userId === session.user.id)?.relation ?? "VIEWER"
