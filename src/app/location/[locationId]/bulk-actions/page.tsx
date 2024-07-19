@@ -213,7 +213,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 if (!team || !teamFilter) return null;
                 let user = null;
                 while (team.users.length > 0 && teamFilter.queue.length !== team.users.length) {
-                    const index = (position + team.users.length) % teamFilter.queue.length;
+                    const index = (position + teamFilter.queue.length) % team.users.length;
                     const userIndex = team.users[index] as any;
                     const userAbsences = userIndex?.absences.filter((absence: any) => doRangesOverlap(absence.dateFrom, absence.dateTo, date, date));
                     if (!!userAbsences?.length) {
@@ -241,7 +241,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
             dates.map(async (date: Date, index: number) => {
                 const isFirstSundayOfMonth = date.getDate() <= 7;
-
+                const usersForJob = teams.flatMap(team => getUserForJob(team.name, date, index)).filter((user) => !!user);
                 const gottesdienst = await prisma.gottesdienst.findMany({
                     where: {
                         dateFrom: {
@@ -285,7 +285,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
                             abendmahl: isFirstSundayOfMonth && abendmahl,
                         }
                     });
-                    const usersForJob = teams.map(team => getUserForJob(team.name, date, index)).filter((user) => !!user);
                     console.log(usersForJob)
                     await prisma.gottesdienst_User.createMany({
                         data: usersForJob.map(({userId, role}) => ({
@@ -295,7 +294,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         }))
                     });
                 } else if (gottesdienst.length) {
-                    const usersForJob = teams.flatMap(team => getUserForJob(team.name, date, index)).filter((user) => !!user);
                     await prisma.gottesdienst.update({
                         where: {
                             id: gottesdienst[0].id
