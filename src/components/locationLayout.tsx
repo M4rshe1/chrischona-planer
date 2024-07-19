@@ -50,9 +50,9 @@ const LocationLayout = ({children, location, locationId, session, user_location_
             <aside
                 className={"flex flex-col items-center w-full h-full bg-base-200 text-base-content  border-base-300"}
             >
-                <h1
-                    className={"w-full font-bold p-4 text-nowrap border-base-300 " + (expanded ? "border-y-2 block" : " hidden")}
-                >{location?.name}</h1>
+                {/*<h1*/}
+                {/*    className={"w-full font-bold p-4 text-nowrap border-base-300 " + (expanded ? "border-y-2 block" : " hidden")}*/}
+                {/*>{location?.name}</h1>*/}
                 <div
                     className={"flex flex-col gap-4 w-full text-lg"}
                 >
