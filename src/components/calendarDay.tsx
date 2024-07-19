@@ -3,6 +3,8 @@
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 
+import Link from "next/link";
+
 
 const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
     day: Date
@@ -56,6 +58,10 @@ const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
                                                 data-tip="Du hast einen Job"></span>) : ""
                     }
                     {
+                        events[0]?.youtubeLink ? (<span className="h-3 rounded-full bg-violet-800 aspect-square flex flex-grow"
+                                                data-tip="Du hast einen Job"></span>) : ""
+                    }
+                    {
                         hasJob(events[0]) ? (<span className="h-3 rounded-full bg-blue-600 aspect-square flex flex-grow"
                                                    data-tip="Du hast einen Job"></span>) : ""
                     }
@@ -77,12 +83,12 @@ const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
                                     <li key={index}
                                         className="grid grid-cols-[30px_1fr] items-center text-left w-full flex-col bg-base-100 p-2 rounded-md border-neutral border-2 shadow-lg">
                                         <h3 className="font-semibold w-full col-span-2">{event.anlass}</h3>
-                                        <FontAwesomeIcon icon={fas.faLocationDot} className={'mr-1'}/>
+                                        <FontAwesomeIcon icon={fas.faLocationDot} className={'ml-1'}/>
                                         <p>{event.location.name}</p>
                                         {
                                             PREDIGER ? (
                                                 <>
-                                                    <FontAwesomeIcon icon={fas.faPersonChalkboard} className={'mr-1'}/>
+                                                    <FontAwesomeIcon icon={fas.faPersonChalkboard} className={'ml-1'}/>
                                                     <p className={"font-semibold"}>{PREDIGER}</p>
                                                 </>
                                             ) : ""
@@ -91,7 +97,7 @@ const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
 
                                             !event.findetStatt ? (
                                                 <>
-                                                    <FontAwesomeIcon icon={fas.faCircleExclamation} className={'mr-1 text-error '}/>
+                                                    <FontAwesomeIcon icon={fas.faCircleExclamation} className={'ml-1 text-error '}/>
                                                     <p className={"text-error font-semibold"}>Findet nicht statt</p>
                                                 </>
                                             ) : ""
@@ -99,7 +105,7 @@ const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
                                         {
                                             event.thema ? (
                                                 <>
-                                                    <FontAwesomeIcon icon={fas.faBookBible} className={'mr-1'}/>
+                                                    <FontAwesomeIcon icon={fas.faBookBible} className={'ml-1'}/>
                                                     <p className={"font-semibold"}>{event.thema}</p>
                                                 </>
                                             ) : ""
@@ -108,8 +114,19 @@ const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
 
                                             event.abendmahl ? (
                                                 <>
-                                                    <FontAwesomeIcon icon={fas.faWineGlass} className={'text-warning mr-1'}/>
+                                                    <FontAwesomeIcon icon={fas.faWineGlass} className={'text-warning ml-1'}/>
                                                     <p className={"text-warning font-semibold"}>Mit Abendmahl</p>
+                                                </>
+                                            ) : ""
+                                        }
+                                        {
+
+                                            event.youtubeLink ? (
+                                                <>
+                                                    <FontAwesomeIcon icon={fas.faPlay} className={'text-violet-800 ml-1'}/>
+                                                    <Link href={event.youtubeLink} target={"_blank"} className={"text-violet-800 font-semibold"}>Stream
+                                                        <FontAwesomeIcon icon={fas.faExternalLinkAlt} className={'ml-1'}/>
+                                                    </Link>
                                                 </>
                                             ) : ""
                                         }
@@ -117,7 +134,7 @@ const CalendarDay = ({day, events, activeMonth, userId, today, index}: {
 
                                             hasJob(event) ? (
                                                 <>
-                                                    <FontAwesomeIcon icon={fas.faUserGear} className={'text-blue-600 mr-1'}/>
+                                                    <FontAwesomeIcon icon={fas.faUserGear} className={'text-blue-600 ml-1'}/>
                                                     <p className="text-blue-600 font-semibold">{hasJob(event).role}</p>
                                                 </>
                                             ) : ""

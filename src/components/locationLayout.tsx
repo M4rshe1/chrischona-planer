@@ -5,7 +5,7 @@ import {RelationRoleLocation} from "@prisma/client";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import {useEffect, useState} from "react";
-import DashboardLink from "@/components/dashboardLink";
+import LayoutLink from "@/components/layoutLink";
 
 
 const LocationLayout = ({children, location, locationId, session, user_location_role}: {
@@ -15,7 +15,7 @@ const LocationLayout = ({children, location, locationId, session, user_location_
     session: UserSession,
     user_location_role: RelationRoleLocation
 }) => {
-    const [expanded, setExpanded] = useState(true);
+    const [expanded, setExpanded] = useState(false);
     useEffect(() => {
         // Check if running in the browser (where `window` exists)
         if (typeof window !== 'undefined') {
@@ -57,7 +57,7 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                     className={"flex flex-col gap-4 w-full text-lg"}
                 >
                     <ul
-                        className={"menu menu-md gap-2"}
+                        className={"menu gap-1 " + (expanded ? " menu-md" : " menu-sm")}
                     >
                         <li
                             className={"tooltip tooltip-right"}
@@ -74,28 +74,28 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                 }
                             </div>
                         </li>
-                        <DashboardLink
+                        <LayoutLink
                             link={`/location/${locationId}`}
                             expanded={expanded}
                             text={"Dashboard"}
                             tooltip={"Dashboard des Standorts"}
                             icon={fas.faHome}
                         />
-                        <DashboardLink
+                        <LayoutLink
                             link={`/location/${locationId}/planer`}
                             expanded={expanded}
                             text={"Planer"}
                             tooltip={"Gottesdienste und Events verwalten"}
                             icon={fas.faCalendarAlt}
                         />
-                        <DashboardLink
+                        <LayoutLink
                             link={`/location/${locationId}/teams`}
                             expanded={expanded}
                             text={"Teams"}
                             tooltip={"Teams verwalten"}
                             icon={fas.faUsersRectangle}
                         />
-                        <DashboardLink
+                        <LayoutLink
                             link={`/location/${locationId}/team`}
                             expanded={expanded}
                             text={"Team"}
@@ -105,21 +105,21 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                         {
                             (["OWNER", "MANAGER"].includes(user_location_role as string) || session.user.role === "ADMIN") &&
                             <>
-                                <DashboardLink
+                                <LayoutLink
                                     link={`/location/${locationId}/requests`}
                                     expanded={expanded}
                                     text={"Anfragen"}
                                     tooltip={"Zugriffsanfragen verwalten"}
                                     icon={fas.faEnvelope}
                                 />
-                                <DashboardLink
+                                <LayoutLink
                                     link={`/location/${locationId}/access`}
                                     expanded={expanded}
                                     text={"Zugriffscodes"}
                                     tooltip={"Zugriffscodes und Links verwalten"}
                                     icon={fas.faKey}
                                 />
-                                <DashboardLink
+                                <LayoutLink
                                     link={`/location/${locationId}/bulk-actions`}
                                     expanded={expanded}
                                     text={"Bulk Actions"}

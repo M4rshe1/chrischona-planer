@@ -4,7 +4,7 @@ import Link from "next/link";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {usePathname} from "next/navigation";
 
-const DashboardLink = ({link, expanded, text, tooltip, icon, badge}: {
+const LayoutLink = ({link, expanded, text, tooltip, icon, badge}: {
     link: string,
     expanded: boolean,
     text: string,
@@ -39,4 +39,4 @@ const DashboardLink = ({link, expanded, text, tooltip, icon, badge}: {
     )
 }
 
-export default DashboardLink;
+export default LayoutLink;

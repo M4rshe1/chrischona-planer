@@ -95,12 +95,12 @@ const BulkactionPage = ({options, handler}: { options: any, handler: any }) => {
                 <>
                     <form
                         action={handleBulkAction}
-                        className={"grid grid-cols-1 grid-rows-[auto_1fr_auto_1fr_auto_1fr_auto] items-center justify-center gap-4 w-full h-full"}
+                        className={"grid grid-cols-1 grid-rows-[auto_48px_1fr_48px_auto_48px_48px] items-center justify-center gap-4 w-full h-full"}
                     >
                         <h1 className={"text-2xl font-semibold text-center w-full"}>Bulk Action</h1>
                         <div className="divider">1. Zeitraum auswählen / Generell</div>
                         <div
-                            className={"flex items-start justify-center w-full gap-4 h-full flex-wrap"}
+                            className={"flex flex-col items-start justify-center w-full gap-4 h-full md:flex-row md:gap-4 md:items-start md:justify-center md:w-full md:h-full"}
                         >
                             <Card>
                                 <div
@@ -121,7 +121,7 @@ const BulkactionPage = ({options, handler}: { options: any, handler: any }) => {
                                         Start Datum
                                     </span>
 
-                                            <input type={"date"} name={"start"} className={"input"} required/>
+                                            <input type={"date"} name={"start"} className={"input input-bordered"} required/>
                                         </label>
                                         <label className={"flex flex-col gap-2"}>
                                     <span

@@ -285,7 +285,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
                             abendmahl: isFirstSundayOfMonth && abendmahl,
                         }
                     });
-                    console.log(usersForJob)
                     await prisma.gottesdienst_User.createMany({
                         data: usersForJob.map(({userId, role}) => ({
                             userId,

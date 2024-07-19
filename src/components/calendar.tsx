@@ -151,6 +151,10 @@ const Calendar = ({data, session}: { data?: any[], session: UserSession }) => {
                     <div className="h-3 rounded-full bg-blue-600 aspect-square"></div>
                     <p className="text-nowrap">Du hast einen Job</p>
                 </div>
+                <div className="flex items-center gap-2 flex-grow">
+                    <div className="h-3 rounded-full bg-violet-800 aspect-square"></div>
+                    <p className="text-nowrap">YouTube Stream</p>
+                </div>
             </div>
 
         </div>
