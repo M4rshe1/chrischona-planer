@@ -15,7 +15,7 @@ const BulkactionPage = ({options, handler}: { options: any, handler: any }) => {
     const path = usePathname()
 
     function handleBulkAction(formData: FormData) {
-        setState('done')
+        setState('processing')
         handler(formData)
     }
 
@@ -58,7 +58,7 @@ const BulkactionPage = ({options, handler}: { options: any, handler: any }) => {
                         className={"text-2xl font-semibold text-center w-full"}
                     >Aktionen wurden erfolgreich ausgeführt!</h1>
                     <div
-                    className={"flex gap-4 items-center justify-center w-full"}
+                        className={"flex gap-4 items-center justify-center w-full"}
                     >
                         <Link
                             href={path?.replace("bulk-actions", "planer") || "/"}
@@ -148,7 +148,7 @@ const BulkactionPage = ({options, handler}: { options: any, handler: any }) => {
                                     </label>
                                     <label className={"flex items-center gap-2"}>
                                         <input type="checkbox"
-                                               name={"createSunday"}
+                                               name={"abendmahl"}
                                                className={"checkbox checkbox-primary checkbox-sm"}
                                         />
                                         <span className={"flex items-center gap-2 text-sm"}>Abendmahl</span>
@@ -342,26 +342,30 @@ const BulkActionDocs = () => {
             <p>
                 <strong>Zeitraum</strong>: Hier wird der Zeitraum festgelegt, für den die Aktionen ausgeführt werden
                 sollen.<br/>
-                <blockquote
-                    className={"pl-4"}
-                >
-                    <strong>Start Datum</strong>: Das Startdatum des Zeitraums.<br/>
-                    <strong>End Datum</strong>: Das Enddatum des Zeitraums.
-                </blockquote>
-                <br/>
-                <strong>Generell</strong>: Hier werden generelle Einstellungen für die Aktionen festgelegt.
-                <blockquote
-                    className={"pl-4"}
-                >
-                    <strong>Fehlende Gottesdienste erstellen</strong>: Erstellt fehlende Gottesdienste am Sonntag falls
-                    diese nicht vorhanden sind.<br/>
-                    <strong>Abendmahl</strong>: Fügt Abendmahl für den ersten Sonntag des Monats hinzu.<br/>
-                    <strong>Alte Daten überschreiben</strong>: Überschreibt alte Daten im Gottesdienstplan mit den
-                    neuen.<br/>
-                    <strong>Standart Predigt</strong>: Fügt die Standart Predigt für den Sonntag hinzu. Leer lassen wen
-                    kein standart Predigt eingetragen werden soll.
-                </blockquote>
             </p>
+            <blockquote
+                className={"pl-4"}
+            >
+                <strong>Start Datum</strong>: Das Startdatum des Zeitraums.<br/>
+                <strong>End Datum</strong>: Das Enddatum des Zeitraums.
+            </blockquote>
+            <br/>
+            <p>
+                <strong>Generell</strong>: Hier werden generelle Einstellungen für die Aktionen festgelegt.
+            </p>
+            <blockquote
+                className={"pl-4"}
+            >
+                <strong>Fehlende Gottesdienste erstellen</strong>: Erstellt fehlende Gottesdienste am Sonntag falls
+                diese nicht vorhanden sind.<br/>
+                <strong>Abendmahl</strong>: Fügt Abendmahl für den ersten Sonntag des Monats hinzu.<br/>
+                <strong>Alte Daten überschreiben</strong>: Überschreibt alte Daten im Gottesdienstplan mit den
+                neuen.<br/>
+                Dabei werden alle alten Daten gelöscht und durch die neuen ersetzt.<br/>
+                Somit verliert man potenziell alle vorhandenen daten in diesem Zeitraum.
+                <br/>
+                <strong>Standart Predigt</strong>: Legt fest wer standardmäßig als prediger eingetragen wird.
+            </blockquote>
             <br/>
             <h3
                 className={"text-xl font-semibold"}

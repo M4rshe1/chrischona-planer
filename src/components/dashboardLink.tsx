@@ -4,13 +4,20 @@ import Link from "next/link";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {usePathname} from "next/navigation";
 
-const DashboardLink = ({link, expanded, text, tooltip, icon}: { link: string, expanded: boolean, text: string, tooltip: string, icon: any}) => {
+const DashboardLink = ({link, expanded, text, tooltip, icon, badge}: {
+    link: string,
+    expanded: boolean,
+    text: string,
+    tooltip: string,
+    icon: any,
+    badge?: string
+}) => {
     const path = usePathname();
-    const match = path.endsWith(link)
+    const match = path?.endsWith(link) || false
 
     return (
         <li
-            className={"tooltip tooltip-right"}
+            className={"tooltip tooltip-right relative"}
             data-tip={tooltip}
         ><Link
             href={link}
@@ -21,7 +28,13 @@ const DashboardLink = ({link, expanded, text, tooltip, icon}: { link: string, ex
                 className={"ml-2 " + (expanded ? "block" : "hidden")}
             >
                 {text}
+                {badge && <span className={"ml-2 badge badge-primary"}>{badge}</span>}
             </div>
+            {
+                !expanded && badge && <div
+                    className={"absolute top-0 right-0 -mt-1 -mr-1 rounded-full bg-primary h-3 w-3 flex items-center justify-center text-xs font-semibold text-white"}
+                ></div>
+            }
         </Link></li>
     )
 }

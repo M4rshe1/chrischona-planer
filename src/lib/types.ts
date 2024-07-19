@@ -1,4 +1,4 @@
-import {RelationRoleLocation, SiteRole} from "@prisma/client";
+import {RelationRoleGottesdienst, RelationRoleLocation, SiteRole} from "@prisma/client";
 
 export const dateOptions = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'}
 
@@ -43,4 +43,14 @@ export type EditableTableHeaderAction = {
     handler: () => void,
     icon: any,
     style: string
+}
+
+export type TeamFilterType = {
+    key: string,
+    name: RelationRoleGottesdienst
+    exclude: string[],
+    queue: string[],
+    behind: number,
+    selected: boolean,
+    count: number
 }

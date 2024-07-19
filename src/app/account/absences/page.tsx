@@ -56,7 +56,7 @@ const page = async () => {
             label: "Grund",
             type: "textarea",
             toggle: true,
-            disabled: true,
+            disabled: false,
         },
     ]
 
@@ -64,13 +64,14 @@ const page = async () => {
         "use server"
         const prisma = new PrismaClient()
 
+
         try {
             await prisma.abwesenheit.update({
                 where: {
                     id: item.id
                 },
                 data: {
-                    [name]: values
+                    [name]: new Date(values).toISOString()
                 }
             })
         } catch (e) {

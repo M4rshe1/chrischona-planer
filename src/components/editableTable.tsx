@@ -13,6 +13,8 @@ import {
     TextareaInput,
     TextBasesInput
 } from "@/components/editableTableInputs";
+import Select from "react-select";
+import SelectStyles from "@/lib/selectStyles";
 
 const EditableTable = ({
                            data,
@@ -31,7 +33,7 @@ const EditableTable = ({
                            allowDelete = false,
                            allowFullscreen = false,
                            allowExport = false,
-                           allowFilter = true,
+                           allowFilter = false,
                            tableName = "table"
                        }: {
     data: any[] | any,
@@ -133,7 +135,12 @@ const EditableTable = ({
                 if (filterItem.value === "" || row[filterItem.name] === null) {
                     return true;
                 }
-                return row[filterItem.name].toString().toLowerCase().includes(filterItem.value.toLowerCase())
+                const rowstring = JSON.stringify(row[filterItem.name]);
+                try {
+                    return rowstring.toLowerCase().includes(filterItem.value?.toLowerCase() || "")
+                } catch (e) {
+                    return rowstring.includes(filterItem.value || "")
+                }
             })
         })
     }
@@ -228,17 +235,31 @@ const EditableTable = ({
 
     function changeFilterValue(e: any, filterItem: any) {
         const newFilter = filter.map((item) => {
+
             if (item.name === filterItem.name) {
+                let value = null;
+                if (filterItem.type == "select") {
+                    value = e?.value as string;
+                } else if (filterItem.type == "multiSelect") {
+                    value = e?.value as string;
+                } else if (filterItem.type == "number") {
+                    value = e.target.value;
+                } else if (filterItem.type == "date") {
+                    value = e.target.value;
+                } else if (filterItem.type == "checkbox") {
+                    value = e.target.checked;
+                } else {
+                    value = e.target.value
+                }
                 return {
                     ...item,
-                    value: e.target.value
+                    value: value
                 }
             }
             return item;
         })
         setFilter(newFilter);
     }
-
 
     return (
         <div
@@ -395,6 +416,7 @@ const EditableTable = ({
                     </tr>
                     </thead>
                     <tbody>
+                    {/*FILTER*/}
                     {
                         allowFilter &&
                         <tr>
@@ -427,32 +449,101 @@ const EditableTable = ({
                                 </td>
                             }
                             {
-
                                 filter.map((filterItem, index) => {
-                                    if (selectedColumns.find((column) => column.name === filterItem.name)?.toggle === false) {
+                                    const column = columns.find((column) => column.name === filterItem.name);
+                                    if (column?.toggle === false) {
                                         return;
                                     }
-
-                                    return (
-                                        <td
-                                            key={index}
-                                        >
-                                            <input
-                                                type={"text"}
-                                                defaultValue={filterItem.value}
-                                                onChange={(e) => {
-                                                    changeFilterValue(e, filterItem)
-                                                }}
-                                                placeholder={filterItem.label}
-                                                className={"input input-sm input-bordered"}
-                                            />
-                                        </td>
-                                    )
+                                    switch (column?.type) {
+                                        case "select":
+                                            return (
+                                                <td key={index}>
+                                                    <Select
+                                                        options={column.options}
+                                                        // @ts-ignore
+                                                        onChange={(e) => {
+                                                            changeFilterValue(e, filterItem)
+                                                        }}
+                                                        isClearable={true}
+                                                        styles={SelectStyles}
+                                                    />
+                                                </td>
+                                            )
+                                        case "multiSelect":
+                                            return (
+                                                <td key={index}>
+                                                    <Select
+                                                        options={column.options}
+                                                        // @ts-ignore
+                                                        isClearable={true}
+                                                        onChange={(e) => {
+                                                            changeFilterValue(e, filterItem)
+                                                        }}
+                                                        styles={SelectStyles}
+                                                    />
+                                                </td>
+                                            )
+                                        case "number":
+                                            return (
+                                                <td key={index}>
+                                                    <input
+                                                        type={"number"}
+                                                        min={column.min}
+                                                        max={column.max}
+                                                        className={"input input-sm input-bordered"}
+                                                        // @ts-ignore
+                                                        onChange={(e) => {
+                                                            changeFilterValue(e, filterItem)
+                                                        }}
+                                                    />
+                                                </td>
+                                            )
+                                        case "date":
+                                            return (
+                                                <td key={index}>
+                                                    <input
+                                                        // @ts-ignore
+                                                        onChange={(e) => {
+                                                            changeFilterValue(e, filterItem)
+                                                        }}
+                                                        type={"date"}
+                                                        className={"input input-sm input-bordered"}
+                                                    />
+                                                </td>
+                                            )
+                                        case "checkbox":
+                                            return (
+                                                <td key={index}>
+                                                    <input
+                                                        type={"checkbox"}
+                                                        // @ts-ignore
+                                                        onChange={(e) => {
+                                                            changeFilterValue(e, filterItem)
+                                                        }}
+                                                        className={"checkbox checkbox-sm checkbox-primary"}
+                                                    />
+                                                </td>
+                                            )
+                                        default:
+                                            return (
+                                                <td key={index}>
+                                                    <input
+                                                        // @ts-ignore
+                                                        onChange={(e) => {
+                                                            changeFilterValue(e, filterItem)
+                                                        }}
+                                                        type={"text"}
+                                                        className={"input input-sm input-bordered"}
+                                                        placeholder={filterItem.label}
+                                                    />
+                                                </td>
+                                            )
+                                    }
                                 })
                             }
                         </tr>
                     }
-
+                    {/*ROWS*/}
                     {
                         rows.length === 0 &&
                         <tr>

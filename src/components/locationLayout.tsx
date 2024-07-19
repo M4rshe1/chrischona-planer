@@ -115,7 +115,7 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                 <DashboardLink
                                     link={`/location/${locationId}/access`}
                                     expanded={expanded}
-                                    text={"Zugriffscodes und Links"}
+                                    text={"Zugriffscodes"}
                                     tooltip={"Zugriffscodes und Links verwalten"}
                                     icon={fas.faKey}
                                 />
@@ -125,6 +125,7 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                                     text={"Bulk Actions"}
                                     tooltip={"Änderungen im großen Stil"}
                                     icon={fas.faTools}
+                                    badge={"Beta"}
                                 />
                             </>
                         }

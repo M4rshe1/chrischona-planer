@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 const Footer = () => {
+    const year = new Date().getFullYear();
+
     return (
         <footer className="footer bg-base-200 text-base-content p-10">
             <aside>
@@ -9,7 +11,8 @@ const Footer = () => {
                 <p>
                     Chrischona Planer
                     <br/>
-                    Teil des Verband Viva Kirsche Schweiz
+                    Teil des Verband Viva Kirsche Schweiz<br/>
+                    &copy; {year}
                 </p>
             </aside>
             <nav>
@@ -20,16 +23,16 @@ const Footer = () => {
             </nav>
             <nav>
                 <h6 className="footer-title">Projekt</h6>
-                <Link href={""} className="link link-hover">Über uns</Link>
-                <Link href={""} className="link link-hover">Kontakt</Link>
-                <Link href={""} className="link link-hover">Feedback</Link>
-                <Link href={"https://github.com/M4rshe1/chrischona-planer"} className="link link-hover">Github</Link>
+                <Link target={"_blank"} href={""} className="link link-hover">Über uns</Link>
+                <Link target={"_blank"} href={""} className="link link-hover">Kontakt</Link>
+                <Link target={"_blank"} href={""} className="link link-hover">Feedback</Link>
+                <Link target={"_blank"} href={"https://github.com/M4rshe1/chrischona-planer"} className="link link-hover">Github</Link>
             </nav>
             <nav>
                 <h6 className="footer-title">Legal</h6>
-                <Link href={""} className="link link-hover">Terms of use</Link>
-                <Link href={""} className="link link-hover">Privacy policy</Link>
-                <Link href={""} className="link link-hover">Cookie policy</Link>
+                <Link target={"_blank"} href={""} className="link link-hover">Terms of use</Link>
+                <Link target={"_blank"} href={""} className="link link-hover">Privacy policy</Link>
+                <Link target={"_blank"} href={""} className="link link-hover">Cookie policy</Link>
             </nav>
         </footer>
     );
