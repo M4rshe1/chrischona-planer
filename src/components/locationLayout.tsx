@@ -15,10 +15,10 @@ const LocationLayout = ({children, location, locationId, session, user_location_
 }) => {
     return (
         <div
-            className={"w-full h-full relative pl-16"}
+            className={"grid grid-cols-1 pl-16 relative"}
         >
             <aside
-                className={"flex flex-col items-center h-full bg-base-200 text-base-content border-base-300 shadow-lg absolute top-0 left-0 bottom-0 z-10 group"}
+                className={"flex flex-col items-center h-full bg-base-200 text-base-content absolute top-0 left-0 bottom-0 z-10 group border-neutral border-r-2"}
             >
                 <div
                     className={"gap-2 flex flex-col items-start justify-start p-2"}
@@ -73,7 +73,10 @@ const LocationLayout = ({children, location, locationId, session, user_location_
                     }
                 </div>
             </aside>
+            <div>
+
             {children}
+            </div>
         </div>
     )
 }

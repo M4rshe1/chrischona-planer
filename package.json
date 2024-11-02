@@ -29,7 +29,8 @@
     "react-use-draggable-scroll": "^0.4.7",
     "recharts": "^2.12.7",
     "sharp": "^0.33.4",
-    "theme-change": "^2.5.0"
+    "theme-change": "^2.5.0",
+    "webpack": "^5.96.1"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",

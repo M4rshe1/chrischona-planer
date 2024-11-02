@@ -14,7 +14,7 @@ export async function middleware(request: NextRequest) {
         const token: JWT | null = await getToken({req: request});
         const isAuthenticated = !!token;
 
-        const publicPaths = ['/', '/auth/login', '/favicon.ico']; // Add more if needed
+        const publicPaths = ['/', '/auth/login','/auth/register', '/favicon.ico']; // Add more if needed
 
         if (!isAuthenticated && !publicPaths.includes(request.nextUrl.pathname)) {
             return NextResponse.redirect(new URL('/auth/login?callbackUrl=' + encodeURIComponent(request.url), request.url));

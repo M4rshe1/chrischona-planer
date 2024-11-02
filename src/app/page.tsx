@@ -11,7 +11,7 @@ const Home = async () => {
     const session: UserSession | null = await getServerSession(authOptions)
     if (!session) {
         return (
-            <main className="flex h-full flex-col items-center justify-between p-24">
+            <main className="flex h-full w-full flex-col items-center justify-between p-24">
                 <div>
                     <h1 className="text-5xl font-bold text-center">Willkommen bei Chrischona Planer</h1>
                     <p className="text-lg text-center">Erstelle und verwalte deine Anlässe und Absenzen</p>
@@ -76,7 +76,7 @@ const Home = async () => {
     }
 
     return (
-        <main className="flex h-full flex-col items-center justify-start py-16 w-[90%] grow">
+        <main className="flex h-full w-full flex-col items-center justify-start py-16 md:px-8 grow">
             <div>
                 <h1 className="text-5xl mb-2 font-bold text-center">Hallo {session.user.name}</h1>
                 <p className="text-lg text-center">Willkommen zurück bei Chrischona Planer</p>
