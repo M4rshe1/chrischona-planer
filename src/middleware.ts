@@ -1,8 +1,6 @@
 import {NextRequest, NextResponse} from 'next/server';
-import {PrismaClient} from '@prisma/client';
 import {getToken, JWT} from "next-auth/jwt";
 
-const prisma = new PrismaClient();
 
 function extractLocationIdFromPath(pathname: string): string | null {
     const match = pathname.match(/\/location\/(\w+)/);
@@ -30,7 +28,7 @@ export async function middleware(request: NextRequest) {
 
         const locationId = extractLocationIdFromPath(url.pathname);
 
-        const managerRoutes = [ `/location/${locationId}/access`, `/location/${locationId}/requests`, `/location/${locationId}/bulk-actions`];
+        const managerRoutes = [`/location/${locationId}/access`, `/location/${locationId}/requests`, `/location/${locationId}/bulk-actions`];
 
         if (url.pathname.startsWith('/location') && token?.role !== 'ADMIN') {
             // @ts-ignore

@@ -1,14 +1,13 @@
 import {getServerSession} from "next-auth";
 import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
-import {PrismaClient} from "@prisma/client";
 import {LoginButton, RegisterButton} from "@/lib/auth";
 import Calendar from "@/components/calendar";
 import LocationCard from "@/components/locationCard";
-
+import {Key} from "react";
+import db from "@/lib/db";
 
 const Home = async () => {
-    const prisma = new PrismaClient()
     const session: UserSession | null = await getServerSession(authOptions)
     if (!session) {
         return (
@@ -29,7 +28,7 @@ const Home = async () => {
     let Locations
     let Events
     try {
-        Locations = await prisma.user.findUnique({
+        Locations = await db.user.findUnique({
             where: {
                 email: session.user.email
             },
@@ -43,7 +42,7 @@ const Home = async () => {
             }
         });
         const locationIds = Locations?.locations.map((location) => location.location.id);
-        Events = await prisma.gottesdienst.findMany({
+        Events = await db.gottesdienst.findMany({
             where: {
                 locationId: {in: locationIds},
             },
@@ -73,7 +72,7 @@ const Home = async () => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     return (
@@ -90,7 +89,7 @@ const Home = async () => {
                     className={"grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-4 items-center w-full mt-4"}
                 >
                     {
-                        Locations?.locations.map((location, index) => {
+                        Locations?.locations.map((location: any, index: Key) => {
                             return (
                                 <LocationCard location={location} key={index}/>
                             )

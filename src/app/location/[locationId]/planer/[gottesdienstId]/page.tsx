@@ -3,13 +3,12 @@ import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, RelationRoleLocation} from "@prisma/client";
+import {RelationRoleLocation} from "@prisma/client";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import EditableTable from "@/components/editableTable";
 import {revalidatePath} from "next/cache";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient()
 
 const page = async ({params}: { params: { locationId: string, gottesdienstId: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -22,7 +21,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
     let location = null;
     let sections = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -31,7 +30,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
             }
         })
 
-        sections = await prisma.zeitplan.findMany({
+        sections = await db.zeitplan.findMany({
             where: {
                 gottesdienstId: params.gottesdienstId
             },
@@ -42,7 +41,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (!location) {
@@ -99,7 +98,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
     async function handleDelete(item: any) {
         "use server"
         try {
-            await prisma.zeitplan.delete({
+            await db.zeitplan.delete({
                 where: {
                     id: item.id
                 }
@@ -107,7 +106,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/planer/${params.gottesdienstId}`)
     }
@@ -115,7 +114,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
     async function handleSave(value: any, item: any, name: string) {
         "use server"
         try {
-            await prisma.zeitplan.update({
+            await db.zeitplan.update({
                 where: {
                     id: item.id
                 },
@@ -126,7 +125,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/planer/${params.gottesdienstId}`)
     }
@@ -138,9 +137,9 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
 
     async function handleCreate() {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
-            const latest = await prisma.zeitplan.findMany({
+            const latest = await db.zeitplan.findMany({
                 where: {
                     gottesdienstId: params.gottesdienstId
                 },
@@ -161,7 +160,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
             }
             if (newTimeString.length < 5) newTimeString = "0" + newTimeString
 
-            await prisma.zeitplan.create({
+            await db.zeitplan.create({
                 data: {
                     gottesdienstId: params.gottesdienstId,
                     timeFrom: newTimeString,
@@ -170,7 +169,7 @@ const page = async ({params}: { params: { locationId: string, gottesdienstId: st
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/planer/${params.gottesdienstId}`)
     }

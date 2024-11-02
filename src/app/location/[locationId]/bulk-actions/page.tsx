@@ -3,13 +3,14 @@ import {authOptions} from '@/lib/authOptions';
 import {TeamFilterType, UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, RelationRoleGottesdienst} from "@prisma/client";
+import {RelationRoleGottesdienst} from "@prisma/client";
 import BulkactionPage from "@/pages/bulkactionPage";
 import {doRangesOverlap} from "@/lib/dateFunctions";
+import db from "@/lib/db";
 
 
 const page = async ({params}: { params: { locationId: string } }) => {
-    const prisma = new PrismaClient()
+
     const session: UserSession | null = await getServerSession(authOptions)
     if (session === null) {
         redirect("/auth/login")
@@ -20,7 +21,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     let Teams = null;
     let location = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -30,7 +31,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
         })
 
-        Teams = await prisma.team.findMany({
+        Teams = await db.team.findMany({
             where: {
                 locationId: locationId
             },
@@ -53,7 +54,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
 
@@ -97,9 +98,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
             date.setDate(date.getDate() + 7)
         }
 
-        const prisma = new PrismaClient()
+
         try {
-            let teams = await prisma.team.findMany({
+            let teams = await db.team.findMany({
                 where: {locationId},
                 select: {
                     id: true,
@@ -242,7 +243,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             dates.map(async (date: Date, index: number) => {
                 const isFirstSundayOfMonth = date.getDate() <= 7;
                 const usersForJob = teams.flatMap(team => getUserForJob(team.name, date, index)).filter((user) => !!user);
-                const gottesdienst = await prisma.gottesdienst.findMany({
+                const gottesdienst = await db.gottesdienst.findMany({
                     where: {
                         dateFrom: {
                             equals: date.toISOString()
@@ -251,7 +252,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 })
 
                 if (!!gottesdienst.length && overrideOld) {
-                    await prisma.gottesdienst.deleteMany({
+                    await db.gottesdienst.deleteMany({
                         where: {
                             id: {
                                 equals: gottesdienst[0].id
@@ -259,7 +260,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         },
                     })
 
-                    await prisma.gottesdienst_User.deleteMany({
+                    await db.gottesdienst_User.deleteMany({
                         where: {
                             gottesdienstId: {
                                 equals: gottesdienst[0].id
@@ -267,7 +268,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         }
                     })
 
-                    await prisma.zeitplan.deleteMany({
+                    await db.zeitplan.deleteMany({
                         where: {
                             gottesdienstId: {
                                 equals: gottesdienst[0].id
@@ -276,7 +277,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                     })
                 }
                 if ((!gottesdienst.length && createSunday) || (!!gottesdienst.length && overrideOld)) {
-                    const gd = await prisma.gottesdienst.create({
+                    const gd = await db.gottesdienst.create({
                         data: {
                             locationId,
                             dateFrom: date.toISOString(),
@@ -285,7 +286,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                             abendmahl: isFirstSundayOfMonth && abendmahl,
                         }
                     });
-                    await prisma.gottesdienst_User.createMany({
+                    await db.gottesdienst_User.createMany({
                         data: usersForJob.map(({userId, role}) => ({
                             userId,
                             gottesdienstId: gd.id,
@@ -293,7 +294,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                         }))
                     });
                 } else if (gottesdienst.length) {
-                    await prisma.gottesdienst.update({
+                    await db.gottesdienst.update({
                         where: {
                             id: gottesdienst[0].id
                         },
@@ -301,7 +302,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                             abendmahl: (isFirstSundayOfMonth && abendmahl) ?? false,
                         }
                     })
-                    await prisma.gottesdienst_User.deleteMany({
+                    await db.gottesdienst_User.deleteMany({
                         where: {
                             gottesdienstId: {
                                 equals: gottesdienst[0].id
@@ -311,7 +312,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                             }
                         }
                     })
-                    await prisma.gottesdienst_User.createMany({
+                    await db.gottesdienst_User.createMany({
                         data: usersForJob.map(({userId, role}) => ({
                             userId,
                             gottesdienstId: gottesdienst[0].id,
@@ -325,7 +326,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             console.error(e)
             return redirect("/location/" + locationId + "/bulk-actions?state=error&description=internal_error?code=500")
         } finally {
-            await prisma.$disconnect()
+
         }
         return redirect("/location/" + locationId + "/bulk-actions?state=done")
     }

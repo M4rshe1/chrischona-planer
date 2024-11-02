@@ -1,15 +1,14 @@
-import {PrismaClient} from "@prisma/client";
 import {hash} from 'bcrypt'
 import Link from "next/link";
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {redirect} from "next/navigation";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient()
 
 const RegisterPage = async (req: any) => {
     const session: UserSession | null = await getServerSession()
+    console.log(session)
     if (session) {
         return redirect('/')
     }
@@ -24,22 +23,24 @@ const RegisterPage = async (req: any) => {
         }
 
         const passwordHash = await hash(password, 10)
-        const user = await prisma.user.findFirst({
+        const user = await db.user.findFirst({
             where: {
                 email: email
             }
         })
         if (user) {
-            await prisma.$disconnect()
+
             return redirect('/auth/register?error=User with that email or username already exists')
         }
-        await prisma.user.create({
+        await db.user.create({
             data: {
+                name: email,
                 email: email,
                 password: passwordHash,
+
             }
         })
-        await prisma.$disconnect()
+
         return redirect('/auth/login?success=Account created, please login')
     }
 

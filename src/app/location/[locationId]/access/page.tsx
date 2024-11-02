@@ -3,14 +3,12 @@ import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
 import EditableTable from "@/components/editableTable";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient()
 
 const page = async ({params}: { params: { locationId: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -23,7 +21,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     let location = null;
     let accessCodes = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -33,7 +31,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
         })
 
-        accessCodes = await prisma.access_code.findMany({
+        accessCodes = await db.access_code.findMany({
             where: {
                 locationId: locationId,
             }
@@ -41,7 +39,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (!location) {
@@ -101,9 +99,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
     async function handleSave(value: any, row: any, name: string) {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
-            await prisma.access_code.update({
+            await db.access_code.update({
                 where: {
                     id: row.id
                 },
@@ -114,7 +112,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
 
         revalidatePath(`/location/${locationId}/access`)
@@ -122,9 +120,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
     async function handleDelete(item: any) {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
-            await prisma.access_code.delete({
+            await db.access_code.delete({
                 where: {
                     id: item.id
                 }
@@ -132,18 +130,18 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/access`)
     }
 
     async function handleCreate() {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
             const validuntil = new Date()
             validuntil.setDate(validuntil.getDate() + 7)
-            await prisma.access_code.create({
+            await db.access_code.create({
                 data: {
                     locationId: locationId,
                     validuntil: validuntil,
@@ -155,7 +153,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/access`)
     }

@@ -3,9 +3,8 @@ import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/lib/authOptions";
 import Zeitplan from "@/components/Zeitplan";
-import {PrismaClient} from "@prisma/client";
+import db from "@/lib/db";
 
-const prisma = new PrismaClient()
 
 const Page = async ({params}: { params: { locationId: string, gottesdienstId: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -18,7 +17,7 @@ const Page = async ({params}: { params: { locationId: string, gottesdienstId: st
     let sections = null;
     let gottesdienst = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -27,7 +26,7 @@ const Page = async ({params}: { params: { locationId: string, gottesdienstId: st
             }
         })
 
-        sections = await prisma.zeitplan.findMany({
+        sections = await db.zeitplan.findMany({
             where: {
                 gottesdienstId: params.gottesdienstId
             },
@@ -36,7 +35,7 @@ const Page = async ({params}: { params: { locationId: string, gottesdienstId: st
             },
         })
 
-        gottesdienst = await prisma.gottesdienst.findUnique({
+        gottesdienst = await db.gottesdienst.findUnique({
             where: {
                 id: params.gottesdienstId
             },
@@ -51,7 +50,7 @@ const Page = async ({params}: { params: { locationId: string, gottesdienstId: st
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (!location) {

@@ -323,7 +323,7 @@ const BulkActionDocs = () => {
         >
             <h2 className={"text-2xl font-semibold text-center w-full mb-8"}>Bulk Action Dokumentation</h2>
             <h3
-                className={"text-xl font-semibold"}
+                className={"text-xl font-semibold my-2"}
             >Funktionen</h3>
             <p>
                 Bulk Aktionen sind dafür gedacht viele Datensätze auf einmal zu bearbeiten.<br/>
@@ -333,7 +333,7 @@ const BulkActionDocs = () => {
             </p>
             <br/>
             <h3
-                className={"text-xl font-semibold"}
+                className={"text-xl font-semibold my-2"}
             >Abschnitt 1</h3>
             <p>
                 In diesem Abschnitt wird der Zeitraum und generelle Einstellungen für die Aktionen festgelegt.
@@ -368,7 +368,7 @@ const BulkActionDocs = () => {
             </blockquote>
             <br/>
             <h3
-                className={"text-xl font-semibold"}
+                className={"text-xl font-semibold my-2"}
             >Abschnitt 2</h3>
             <p>
                 In diesem Abschnitt werden die Aktionen ausgewählt, die ausgeführt werden sollen.
@@ -384,7 +384,7 @@ const BulkActionDocs = () => {
             </p>
             <br/>
             <h3
-                className={"text-xl font-semibold"}
+                className={"text-xl font-semibold my-2"}
             >Abschnitt 3</h3>
             <p>
                 In diesem Abschnitt werden die Aktionen ausgeführt.

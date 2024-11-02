@@ -3,15 +3,14 @@ import {authOptions} from '@/lib/authOptions';
 import {EditableTableColumn, UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, RelationRoleGottesdienst, RelationRoleLocation} from "@prisma/client";
+import {RelationRoleGottesdienst, RelationRoleLocation} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import EditableTable from "@/components/editableTable";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient()
 
 const page = async ({params}: { params: { locationId: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -25,7 +24,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     let gottestdienste = null;
     let teams = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -35,7 +34,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
         })
 
-        gottestdienste = await prisma.gottesdienst.findMany({
+        gottestdienste = await db.gottesdienst.findMany({
             where: {
                 locationId: locationId
             },
@@ -51,7 +50,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             }
         })
 
-        teams = await prisma.team.findMany({
+        teams = await db.team.findMany({
             where: {
                 locationId: locationId
             },
@@ -72,7 +71,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (!location) {
@@ -362,16 +361,16 @@ const page = async ({params}: { params: { locationId: string } }) => {
             if (!value) {
                 return
             } else if (typeof value === 'string') {
-                value = [ value ]
+                value = [value]
             }
 
             connections = true
         }
 
-        const prisma = new PrismaClient()
+
         if (connections) {
             try {
-                await prisma.gottesdienst_User.deleteMany({
+                await db.gottesdienst_User.deleteMany({
                     where: {
                         gottesdienstId: row.id,
                         role: name as RelationRoleGottesdienst
@@ -381,7 +380,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 console.error(e)
             }
 
-            await prisma.gottesdienst_User.createMany({
+            await db.gottesdienst_User.createMany({
                 data: value?.map((id: string) => {
                     return {
                         userId: id,
@@ -390,10 +389,10 @@ const page = async ({params}: { params: { locationId: string } }) => {
                     }
                 })
             })
-        } else if (['dateFrom', 'dateUntill'].includes(name))  {
+        } else if (['dateFrom', 'dateUntill'].includes(name)) {
             value = new Date(value)
             try {
-                await prisma.gottesdienst.update({
+                await db.gottesdienst.update({
                     where: {
                         id: row.id
                     },
@@ -405,12 +404,11 @@ const page = async ({params}: { params: { locationId: string } }) => {
             } catch (e) {
                 console.error(e)
             } finally {
-                await prisma.$disconnect()
+
             }
-        } else
-        {
+        } else {
             try {
-                await prisma.gottesdienst.update({
+                await db.gottesdienst.update({
                     where: {
                         id: row.id
                     },
@@ -421,7 +419,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             } catch (e) {
                 console.error(e)
             } finally {
-                await prisma.$disconnect()
+
             }
         }
     }
@@ -434,30 +432,28 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
     async function handleDelete(item: any) {
         "use server";
-        const prisma = new PrismaClient()
+
 
         try {
-            await prisma.gottesdienst_User.deleteMany({
+            await db.gottesdienst_User.deleteMany({
                 where: {
                     gottesdienstId: item.id
                 }
             })
 
-            await prisma.zeitplan.deleteMany({
+            await db.zeitplan.deleteMany({
                 where: {
                     gottesdienstId: item.id
                 }
             })
 
-            await prisma.gottesdienst.delete({
+            await db.gottesdienst.delete({
                 where: {
                     id: item.id
                 }
             })
         } catch (e) {
             console.error(e)
-        } finally {
-            await prisma.$disconnect()
         }
 
         revalidatePath(`/location/${locationId}/planer`)
@@ -466,10 +462,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
     async function createHandler(dontRemove: any) {
         "use server";
 
-        const prisma = new PrismaClient()
 
         try {
-            await prisma.gottesdienst.create({
+            await db.gottesdienst.create({
                 data: {
                     location: {
                         connect: {
@@ -480,8 +475,6 @@ const page = async ({params}: { params: { locationId: string } }) => {
             })
         } catch (e) {
             console.error(e)
-        } finally {
-            await prisma.$disconnect()
         }
 
         revalidatePath(`/location/${locationId}/planer`)

@@ -2,9 +2,7 @@
 
 import {UserSession} from "@/lib/types";
 import {RelationRoleLocation} from "@prisma/client";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
-import {useEffect, useState} from "react";
 import LayoutLink from "@/components/layoutLink";
 
 
@@ -15,121 +13,64 @@ const LocationLayout = ({children, location, locationId, session, user_location_
     session: UserSession,
     user_location_role: RelationRoleLocation
 }) => {
-    const [expanded, setExpanded] = useState(false);
-    useEffect(() => {
-        // Check if running in the browser (where `window` exists)
-        if (typeof window !== 'undefined') {
-            const savedTheme = JSON.parse(localStorage.getItem("location_layout_expanded") ?? "true");
-            setExpanded(savedTheme);
-
-            const handleResize = () => {
-                if (window.innerWidth < 768) {
-                    setExpanded(false);
-                } else {
-                    const localstorage = localStorage.getItem("location_layout_expanded");
-                    setExpanded(localstorage ? JSON.parse(localstorage) : true);
-                }
-            };
-
-            window.addEventListener("resize", handleResize);
-            return () => window.removeEventListener("resize", handleResize);
-        }
-    }, []);
-
-    const handleLayoutChange = () => {
-        if (typeof window !== 'undefined') {
-            setExpanded(!expanded);
-            localStorage.setItem("location_layout_expanded", JSON.stringify(!expanded));
-        }
-    };
-
     return (
         <div
-            className={"w-full h-full grid grid-cols-[auto_1fr] items-center justify-start grow"}
+            className={"w-full h-full relative pl-16"}
         >
             <aside
-                className={"flex flex-col items-center w-full h-full bg-base-200 text-base-content  border-base-300"}
+                className={"flex flex-col items-center h-full bg-base-200 text-base-content border-base-300 shadow-lg absolute top-0 left-0 bottom-0 z-10 group"}
             >
-                {/*<h1*/}
-                {/*    className={"w-full font-bold p-4 text-nowrap border-base-300 " + (expanded ? "border-y-2 block" : " hidden")}*/}
-                {/*>{location?.name}</h1>*/}
                 <div
-                    className={"flex flex-col gap-4 w-full text-lg"}
+                    className={"gap-2 flex flex-col items-start justify-start p-2"}
                 >
-                    <ul
-                        className={"menu gap-1 " + (expanded ? " menu-md" : " menu-sm")}
-                    >
-                        <li
-                            className={"tooltip tooltip-right"}
-                            data-tip="Menü ein-/ausblenden"
-                        >
-                            <div
-                                className={"font-semibold flex item-center justify-center " + (expanded ? "aspect-auto" : "aspect-square")}
-                                onClick={() => handleLayoutChange()}
-                            >
-                                {
-                                    expanded ?
-                                        <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faCompress}/> :
-                                        <FontAwesomeIcon className={"aspect-square h-4"} icon={fas.faExpand}/>
-                                }
-                            </div>
-                        </li>
-                        <LayoutLink
-                            link={`/location/${locationId}`}
-                            expanded={expanded}
-                            text={"Dashboard"}
-                            tooltip={"Dashboard des Standorts"}
-                            icon={fas.faHome}
-                        />
-                        <LayoutLink
-                            link={`/location/${locationId}/planer`}
-                            expanded={expanded}
-                            text={"Planer"}
-                            tooltip={"Gottesdienste und Events verwalten"}
-                            icon={fas.faCalendarAlt}
-                        />
-                        <LayoutLink
-                            link={`/location/${locationId}/teams`}
-                            expanded={expanded}
-                            text={"Teams"}
-                            tooltip={"Teams verwalten"}
-                            icon={fas.faUsersRectangle}
-                        />
-                        <LayoutLink
-                            link={`/location/${locationId}/team`}
-                            expanded={expanded}
-                            text={"Team"}
-                            tooltip={"Das Team des Standorts"}
-                            icon={fas.faUsers}
-                        />
-                        {
-                            (["OWNER", "MANAGER"].includes(user_location_role as string) || session.user.role === "ADMIN") &&
-                            <>
-                                <LayoutLink
-                                    link={`/location/${locationId}/requests`}
-                                    expanded={expanded}
-                                    text={"Anfragen"}
-                                    tooltip={"Zugriffsanfragen verwalten"}
-                                    icon={fas.faEnvelope}
-                                />
-                                <LayoutLink
-                                    link={`/location/${locationId}/access`}
-                                    expanded={expanded}
-                                    text={"Zugriffscodes"}
-                                    tooltip={"Zugriffscodes und Links verwalten"}
-                                    icon={fas.faKey}
-                                />
-                                <LayoutLink
-                                    link={`/location/${locationId}/bulk-actions`}
-                                    expanded={expanded}
-                                    text={"Bulk Actions"}
-                                    tooltip={"Änderungen im großen Stil"}
-                                    icon={fas.faTools}
-                                    badge={"Beta"}
-                                />
-                            </>
-                        }
-                    </ul>
+                    <LayoutLink
+                        link={`/location/${locationId}`}
+                        text={"Dashboard"}
+                        tooltip={"Dashboard des Standorts"}
+                        icon={fas.faHome}
+                    />
+                    <LayoutLink
+                        link={`/location/${locationId}/planer`}
+                        text={"Planer"}
+                        tooltip={"Gottesdienste und Events verwalten"}
+                        icon={fas.faCalendarAlt}
+                    />
+                    <LayoutLink
+                        link={`/location/${locationId}/teams`}
+                        text={"Teams"}
+                        tooltip={"Teams verwalten"}
+                        icon={fas.faUsersRectangle}
+                    />
+                    <LayoutLink
+                        link={`/location/${locationId}/team`}
+                        text={"Team"}
+                        tooltip={"Das Team des Standorts"}
+                        icon={fas.faUsers}
+                    />
+                    {
+                        (["OWNER", "MANAGER"].includes(user_location_role as string) || session.user.role === "ADMIN") &&
+                        <>
+                            <LayoutLink
+                                link={`/location/${locationId}/requests`}
+                                text={"Anfragen"}
+                                tooltip={"Zugriffsanfragen verwalten"}
+                                icon={fas.faEnvelope}
+                            />
+                            <LayoutLink
+                                link={`/location/${locationId}/access`}
+                                text={"Zugriffscodes"}
+                                tooltip={"Zugriffscodes und Links verwalten"}
+                                icon={fas.faKey}
+                            />
+                            <LayoutLink
+                                link={`/location/${locationId}/bulk-actions`}
+                                text={"Bulk Actions"}
+                                tooltip={"Änderungen im großen Stil"}
+                                icon={fas.faTools}
+                                badge={"Beta"}
+                            />
+                        </>
+                    }
                 </div>
             </aside>
             {children}

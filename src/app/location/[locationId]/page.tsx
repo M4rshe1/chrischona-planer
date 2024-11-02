@@ -1,4 +1,3 @@
-import {PrismaClient} from '@prisma/client'
 import Link from "next/link";
 import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
@@ -8,10 +7,11 @@ import LocationLayout from "@/components/locationLayout";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import Donut from "@/components/ui/charts/donut";
+import db from "@/lib/db";
 
 
 const LocationPage = async ({params}: { params: { locationId: string } }) => {
-    const prisma = new PrismaClient()
+    
     const session: UserSession | null = await getServerSession(authOptions)
     if (session === null) {
         redirect("/auth/login")
@@ -21,9 +21,8 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
     let location = null;
     let openRequests = null;
     let teams = null;
-    // let gottesdienste = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -36,7 +35,7 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
             }
         })
 
-        openRequests = await prisma.access_request.aggregate({
+        openRequests = await db.access_request.aggregate({
             _count: {
                 status: true
             },
@@ -48,7 +47,7 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
         })
         openRequests = openRequests ? openRequests : {_count: {status: 0}}
 
-        teams = await prisma.team.findMany({
+        teams = await db.team.findMany({
             where: {
                 locationId: locationId
             },
@@ -61,7 +60,7 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
             }
         })
 
-        // gottesdienste = await prisma.gottesdienst.findMany({
+        // gottesdienste = await db.gottesdienst.findMany({
         //     where: {
         //         locationId: locationId
         //     },
@@ -77,7 +76,7 @@ const LocationPage = async ({params}: { params: { locationId: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+       
     }
 
     if (!location) {

@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -H 0.0.0.0",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -H 0.0.0.0",
     "lint": "next lint"
   },
   "dependencies": {
+    "@auth/core": "^0.37.2",
     "@auth/prisma-adapter": "^2.4.1",
     "@fortawesome/fontawesome-svg-core": "^6.5.2",
     "@fortawesome/free-solid-svg-icons": "^6.5.2",
@@ -19,7 +20,7 @@
     "bcrypt": "^5.1.1",
     "lucide-react": "^0.408.0",
     "mock-aws-s3": "^4.0.2",
-    "next": "14.2.4",
+    "next": "14.2.10",
     "next-auth": "^4.24.7",
     "nock": "^13.5.4",
     "react": "^18",

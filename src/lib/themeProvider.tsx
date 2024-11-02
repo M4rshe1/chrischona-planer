@@ -1,18 +1,16 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 
 const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setTheme] = useState<string>("dark");
-
-    useEffect(() => {
-        const savedTheme = typeof window !== 'undefined'
-            ? localStorage.getItem("chrischona_theme")
-            : "dark"
-        if (savedTheme) {
-            setTheme(savedTheme);
+    const [theme, setTheme] = useState<string>(() => {
+        if (typeof window !== 'undefined') {
+            const savedTheme = localStorage.getItem("chrischona_theme");
+            return savedTheme ? savedTheme : "dark";
+        } else {
+            return "dark"; // Default theme if on server-side
         }
-    }, []);
+    });
 
     return (
         <html lang="de" data-theme={theme}>

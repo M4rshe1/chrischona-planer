@@ -1,12 +1,11 @@
 import {NextAuthOptions} from 'next-auth';
 import CredentialsProvider from "next-auth/providers/credentials";
-import {PrismaClient} from '@prisma/client';
+import db from "@/lib/db";
 import {compare} from "bcrypt";
 
-const prisma = new PrismaClient();
 
 async function refreshUserData(userId: string) {
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
         where: {
             id: userId
         },
@@ -19,7 +18,7 @@ async function refreshUserData(userId: string) {
             }
         }
     });
-    await prisma.$disconnect();
+
 
     if (!user) return null;
 
@@ -58,7 +57,7 @@ export const authOptions: NextAuthOptions = {
                     return null;
                 }
 
-                const user = await prisma.user.findUnique({
+                const user = await db.user.findUnique({
                     where: {
                         email: credentials.email
                     },
@@ -72,7 +71,6 @@ export const authOptions: NextAuthOptions = {
                     }
                 });
 
-                await prisma.$disconnect();
 
                 if (!user) {
                     return null;

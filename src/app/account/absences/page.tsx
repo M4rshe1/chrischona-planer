@@ -2,12 +2,10 @@ import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {redirect} from "next/navigation";
-import {PrismaClient} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import EditableTable from "@/components/editableTable";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient()
 
 const page = async () => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -17,7 +15,7 @@ const page = async () => {
 
     let absences = null;
     try {
-        absences = await prisma.abwesenheit.findMany({
+        absences = await db.abwesenheit.findMany({
             where: {
                 userId: session.user.id
             }
@@ -25,7 +23,7 @@ const page = async () => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
 
@@ -62,11 +60,10 @@ const page = async () => {
 
     async function handleSave(values: any, item: any, name: string) {
         "use server"
-        const prisma = new PrismaClient()
 
 
         try {
-            await prisma.abwesenheit.update({
+            await db.abwesenheit.update({
                 where: {
                     id: item.id
                 },
@@ -83,9 +80,9 @@ const page = async () => {
 
     async function handleDelete(item: any) {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
-            await prisma.abwesenheit.delete({
+            await db.abwesenheit.delete({
                 where: {
                     id: item.id
                 }
@@ -93,7 +90,7 @@ const page = async () => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/account/absences`)
     }
@@ -104,10 +101,10 @@ const page = async () => {
         if (!session) {
             redirect("/auth/login")
         }
-        const prisma = new PrismaClient()
+
 
         try {
-            await prisma.abwesenheit.create({
+            await db.abwesenheit.create({
                 data: {
                     userId: session.user.id,
                     dateFrom: new Date(),

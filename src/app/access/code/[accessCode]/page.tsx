@@ -1,12 +1,10 @@
-import {PrismaClient} from "@prisma/client";
 import Link from "next/link";
 import {redirect} from "next/navigation";
 import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient();
 
 const Page = async ({params}: { params: { accessCode: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -18,7 +16,7 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
     let db_accessCode = null
     let user_in_location = null
     try {
-        db_accessCode = await prisma.access_code.findUnique({
+        db_accessCode = await db.access_code.findUnique({
             where: {
                 id: params.accessCode
             },
@@ -27,7 +25,7 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
             }
         })
 
-        user_in_location = await prisma.user_location.findFirst({
+        user_in_location = await db.user_location.findFirst({
             where: {
                 userId: session.user.id,
                 locationId: db_accessCode?.location.id
@@ -36,7 +34,7 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (user_in_location) {
@@ -100,14 +98,13 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
     }
 
     if (db_accessCode.approvalNeeded) {
-        await prisma.access_request.create({
+        await db.access_request.create({
             data: {
                 locationId: db_accessCode.location.id,
                 userId: session.user.id,
                 message: "Zugriffsanfrage mit dem Code " + params.accessCode
             }
         })
-
 
 
         return (
@@ -126,7 +123,7 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
     }
 
     try {
-        await prisma.access_code.update({
+        await db.access_code.update({
             where: {
                 id: db_accessCode.id
             },
@@ -135,7 +132,7 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
             }
         })
 
-        await prisma.user_location.create({
+        await db.user_location.create({
             data: {
                 user: {connect: {id: session.user.id}},
                 location: {connect: {id: db_accessCode.location.id}}
@@ -145,7 +142,7 @@ const Page = async ({params}: { params: { accessCode: string } }) => {
         (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
 

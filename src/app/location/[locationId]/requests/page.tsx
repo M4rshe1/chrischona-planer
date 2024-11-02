@@ -3,15 +3,14 @@ import {authOptions} from '@/lib/authOptions';
 import {EditableTableRowAction, UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient, RelationRoleLocation, Status} from "@prisma/client";
+import {RelationRoleLocation, Status} from "@prisma/client";
 import {revalidatePath} from "next/cache";
 import {fas} from "@fortawesome/free-solid-svg-icons";
 import Loading from "@/app/loading";
 import {Suspense} from "react";
 import EditableTable from "@/components/editableTable";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient()
 
 const page = async ({params}: { params: { locationId: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -23,7 +22,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     let location = null;
     let anfragen = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -33,7 +32,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
         })
 
-        anfragen = await prisma.access_request.findMany({
+        anfragen = await db.access_request.findMany({
             where: {
                 locationId: locationId,
                 status: "PENDING"
@@ -45,7 +44,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (!location) {
@@ -129,9 +128,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
     async function handleApprove(item: any) {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
-            await prisma.access_request.update({
+            await db.access_request.update({
                 where: {
                     id: item.id
                 },
@@ -140,7 +139,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
                 }
             })
 
-            await prisma.user_location.create({
+            await db.user_location.create({
                 data: {
                     locationId: locationId,
                     userId: item.userId,
@@ -150,16 +149,16 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/requests`)
     }
 
     async function handledeny(item: any) {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
-            await prisma.access_request.update({
+            await db.access_request.update({
                 where: {
                     id: item.id
                 },
@@ -170,7 +169,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/requests`)
     }

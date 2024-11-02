@@ -3,14 +3,12 @@ import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
 import {notFound, redirect} from "next/navigation";
-import {PrismaClient} from "@prisma/client";
 import TeamForm from "@/components/teamForm";
 import {revalidatePath} from "next/cache";
 import {Suspense} from "react";
 import Loading from "@/app/loading";
+import db from "@/lib/db";
 
-
-const prisma = new PrismaClient()
 
 const page = async ({params}: { params: { locationId: string } }) => {
     const session: UserSession | null = await getServerSession(authOptions)
@@ -24,7 +22,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
     let Teams = null;
     let users = null;
     try {
-        location = await prisma.location.findUnique({
+        location = await db.location.findUnique({
             where: {
                 id: locationId
             },
@@ -34,7 +32,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
 
         })
 
-        Teams = await prisma.team.findMany({
+        Teams = await db.team.findMany({
             where: {
                 locationId: locationId
             },
@@ -55,7 +53,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
             },
         })
 
-        users = await prisma.user.findMany({
+        users = await db.user.findMany({
             where: {
                 locations: {
                     some: {
@@ -74,14 +72,14 @@ const page = async ({params}: { params: { locationId: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (!location) {
         return notFound()
     }
 
-    Teams = Teams?.map((team) => {
+    Teams = Teams?.map((team: { users: any[]; }) => {
         return {
             ...team,
             users: team.users.map((user) => {
@@ -98,9 +96,9 @@ const page = async ({params}: { params: { locationId: string } }) => {
     async function handleAdd(userId: string, teamId: string) {
         "use server"
         console.log(userId, teamId)
-        const prisma = new PrismaClient()
+
         try {
-            await prisma.team_user.create({
+            await db.team_user.create({
                 data: {
                     teamId: teamId,
                     userId: userId
@@ -109,16 +107,16 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/team`)
     }
 
     async function handleDelete(connectionId: string) {
         "use server"
-        const prisma = new PrismaClient()
+
         try {
-            await prisma.team_user.delete({
+            await db.team_user.delete({
                 where: {
                     id: connectionId
                 }
@@ -126,7 +124,7 @@ const page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath(`/location/${locationId}/team`)
     }

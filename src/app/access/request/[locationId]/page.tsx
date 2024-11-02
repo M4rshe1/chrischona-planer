@@ -1,4 +1,3 @@
-import {PrismaClient} from '@prisma/client'
 import {authOptions} from '@/lib/authOptions';
 import {UserSession} from "@/lib/types";
 import {getServerSession} from "next-auth";
@@ -6,8 +5,8 @@ import {redirect} from "next/navigation";
 import AccessRequestForm from "@/components/accessRequestFormular";
 import {revalidatePath} from "next/cache";
 import Link from "next/link";
+import db from "@/lib/db";
 
-const prisma = new PrismaClient()
 
 const Page = async ({params}: { params: { locationId: string } }) => {
     const locationId = params.locationId;
@@ -22,7 +21,7 @@ const Page = async ({params}: { params: { locationId: string } }) => {
 
     let requests = null;
     try {
-        requests = await prisma.access_request.findMany({
+        requests = await db.access_request.findMany({
             where: {
                 userId: session?.user.id,
                 locationId: locationId,
@@ -32,7 +31,7 @@ const Page = async ({params}: { params: { locationId: string } }) => {
     } catch (e) {
         console.error(e)
     } finally {
-        await prisma.$disconnect()
+
     }
 
     if (requests) {
@@ -60,7 +59,7 @@ const Page = async ({params}: { params: { locationId: string } }) => {
     async function requestAccess(formData: FormData) {
         "use server";
         try {
-            const request = await prisma.access_request.create({
+            const request = await db.access_request.create({
                 data: {
                     user: {connect: {id: session?.user.id}},
                     location: {connect: {id: locationId}},
@@ -69,7 +68,7 @@ const Page = async ({params}: { params: { locationId: string } }) => {
         } catch (e) {
             console.error(e)
         } finally {
-            await prisma.$disconnect()
+
         }
         return revalidatePath("/request/access/" + locationId)
     }
